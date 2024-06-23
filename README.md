@@ -1,6 +1,17 @@
 # Introduction
 [Section-properties](https://github.com/robbievanleeuwen/section-properties) examples.
 
+## Dependencies
+Dependencies can be installed using pip
+ * sectionproperties - needed for almost all examples
+ * pygltflib - needed for gltf export
+ * plyfile - needed for ply export
+
+Typical command needed after update of python is
+```
+pip install spyder-kernels==2.5.* pygltflib sectionproperties plyfile
+```
+
 # Topics
 
 ## Provide warping function information
