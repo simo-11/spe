@@ -38,6 +38,10 @@ for i=1:n
     fprintf("file=%s\n",fn);
     file=sprintf("%s/%s",list(i).folder,fn);
     t=readtable(file);
+    rfn=replace(fn,"warping","results");
+    rfn=replace(rfn,"csv","json");
+    fn=sprintf("%s/%s",list(i).folder,rfn);
+    cao.spr=jsondecode(fileread(fn));
     if ao.debugLevel>1
         fprintf("x values: %.3g - %.3g\n",min(t.x),max(t.x));
         fprintf("y values: %.3g - %.3g\n",min(t.y),max(t.y));

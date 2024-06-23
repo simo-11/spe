@@ -10,7 +10,7 @@ arguments
     ao.scat_type='halton'
     ao.cards=[10,20,25,30]    
     ao.debugLevel=0
-    ao.plot=0
+    ao.plot=7
     % bitwise and
     % 1:domain 
     % 2:integration points 
