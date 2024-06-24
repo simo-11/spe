@@ -4,12 +4,13 @@ arguments
     ao.width=50
     ao.t=4
     ao.r=8 % outer radius
-    ao.n_r=0
+    ao.n_r=8
     ao.models=["poly44","cubicinterp","tps"]
     ao.cubs=["rbfcub"]
     ao.scat_type='halton'
     ao.cards=[10,20,25,30]    
     ao.debugLevel=0
+    ao.max_epc=10
     ao.plot=0 
     % bitwise and
     % 1:domain 
@@ -152,10 +153,17 @@ for i=1:n
                         model,cub_with_card);
                     continue;
                 end
+                [~,~,epc]=get_maiw(t,f);
+                if epc>ao.max_epc
+                    fprintf(['model=%s, cub=%s rejected ' ...
+                        'due to epc of %.3G\n'],...
+                        model,cub_with_card,epc);
+                    continue;
+                end
                 if ao.latex
-                    fprintf("%s%s-%s & %.3g %s\n", ...
+                    fprintf("%s%s-%s & %.3g %s & %.1f %s\n", ...
                     "\hspace{1cm}",model,cub_with_card,...
-                    Iw*1e12,"\(10^{-12}\)\\");
+                    Iw*1e12,"\(10^{-12}\)",epc,"\\");
                 else
                     fprintf("model=%s-%s, Iw=%.3g, cub took %.3G ms\n", ...
                         model,cub_with_card,Iw,elapsed*1000);
