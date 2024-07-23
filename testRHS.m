@@ -10,7 +10,7 @@ arguments
     ao.scat_type='halton'
     ao.cards=[10,20,25,30]    
     ao.debugLevel=0
-    ao.max_epc=10
+    ao.max_epc=100
     ao.plot=0
     % bitwise and
     % 1:domain 
@@ -170,7 +170,7 @@ for i=1:n
                     continue;
                 end
                 if ao.latex
-                    fprintf("%s%s-%s & %.3g %s & %.1f %s\n", ...
+                    fprintf("%s%s-%s & %.1f %s & %.1f %s\n", ...
                     "\hspace{1cm}",model,cub_with_card,...
                     Iw*1e12,"\(10^{-12}\)",epc,"\\");
                 else
