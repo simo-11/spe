@@ -1,3 +1,10 @@
+*do,EL_SIZE,0.019,0.001,-0.002
+/go
+*ask,EL_SIZE,Give 0 to end,%EL_SIZE%
+*if,EL_SIZE,le,0,exit
+PARSAV,,ansys/shs-150
+/clear
+PARRES,,ansys/shs-150
 /prep7
 *GET,P1,ACTIVE,,TIME,CPU
 RECTNG,0.016,0.15/2,0,0.008
@@ -10,11 +17,13 @@ AGEN,1,ALL,,,0,-0.15/2,,,1,1
 ARSYM,Y,ALL
 /rep, fast
 AGLUE,ALL
-LESIZE,ALL,0.001
+LESIZE,ALL,EL_SIZE
 ET,1,PLANE183
 AMESH,ALL
-secwrite,github/spe/shs,,,1
+secwrite,ansys/shs,,,1
 *GET,P2,ACTIVE,,TIME,CPU
-SECREAD,github/spe/shs,,,MESH
+SECTYPE,1,BEAM,MESH
+SECREAD,ansys/shs,,,MESH
 *GET,P3,ACTIVE,,TIME,CPU
 SECPLOT,1,1
+*enddo
