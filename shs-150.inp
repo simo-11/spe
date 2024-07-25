@@ -1,8 +1,19 @@
+C***,Calculate section properties for SHS-150-8 using various mesh sizes
+C***,Store results for each analysis in parameter arrays
+*del,all
+size=10
+*dim,el_sizes,array,size
+*dim,iws,array,size
+*dim,prep_times,array,size
+*dim,solve_times,array,size
+*dim,node_counts,array,size
+index=1
+previous_node_count=0
 *do,EL_SIZE,0.019,0.001,-0.002
 /go
 *ask,EL_SIZE,Give 0 to end,%EL_SIZE%
 *if,EL_SIZE,le,0,exit
-PARSAV,,ansys/shs-150
+PARSAV,all,ansys/shs-150
 /clear
 PARRES,,ansys/shs-150
 /prep7
@@ -20,10 +31,23 @@ AGLUE,ALL
 LESIZE,ALL,EL_SIZE
 ET,1,PLANE183
 AMESH,ALL
+*get,node_count,node,all,count
+! skip analysis if mesh is similar as previous
+*if,node_count,eq,previous_node_count,cycle
+previous_node_count=node_count
+*get,element_count,element,all,count
 secwrite,ansys/shs,,,1
 *GET,P2,ACTIVE,,TIME,CPU
 SECTYPE,1,BEAM,MESH
 SECREAD,ansys/shs,,,MESH
 *GET,P3,ACTIVE,,TIME,CPU
 SECPLOT,1,1
+*get,iw,secp,1,prop,warp
+el_sizes(index)=el_size
+prep_times(index)=p2-p1
+solve_times(index)=p3-p2
+iws(index)=iw
+node_counts(index)=node_count
+index=index+1
 *enddo
+PARSAV,all,ansys/shs-150
