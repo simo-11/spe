@@ -174,13 +174,13 @@ for msi in range(mss):
         elapsed=time.time()-ts
         uc=section.default_filename("","solve")
         print(f'{uc} took {elapsed:.3f} seconds')
-        # for table {tab:shs-values-rounded}
         section.plot_mesh(
             title=f'Mesh with mesh_size={msa[msi]} and n_r={n_r}',
                           materials=False)
         nv=section.get_gamma()
         wv[msi,nri]=nv  
         st[msi,nri]=elapsed
+        # for table {tab:shs-values-rounded}
         print(f'''Section-Properties({2*t},{msa[msi]},{n_r},\
 {section.num_nodes},{len(section.elements)})\
  & {nv*1e12:.1f} \\(10^{-12}\\)\\\\''')
@@ -224,4 +224,72 @@ plt.show()
 """
 Experiment on n_r option of rhs with GBTUL.
 """
-
+import matplotlib.pyplot as plt
+import numpy as np
+import time
+import gc
+p="rhs"
+script="primitive"
+primitive=f"--primitive {p}"
+h=150
+w=h
+t=8
+xv=list(range(2,4,1))#+list(range(10,61,5))#range(2,9,1)+(range(10,61,5)
+n_rs=len(xv)
+wv=np.zeros(n_rs)
+st=np.zeros(n_rs)
+nri=0
+for n_r in xv:
+    gc.collect()
+    section=None
+    ts=time.time()      
+    runfile(f'{script}.py',#noqa
+      args=f"""--gbtul -W={w/1000} -H={h/1000} --thickness={t/1000}
+      {primitive} --n_r={n_r}""") 
+    elapsed=time.time()-ts
+    if not section:
+        raise Exception("Gbtul failed")
+    uc=section.default_filename("","gbtul")
+    print(f'{uc} took {elapsed:.3f} seconds')
+    nv=section.get_gamma()
+    wv[nri]=nv  
+    st[nri]=elapsed
+    # for table {tab:shs-values-rounded}
+    print(f'''GBTUL({n_r})\
+ & {nv*1e12:.1f} \\(10^{-12}\\)\\\\''')
+    nri=nri+1
+for pic in range(2):
+    match pic:
+        case 0:
+            axv=xv[:8]
+        case 1:
+            axv=xv[5:]
+    fig, ax = plt.subplots()
+    ax.set_xticks(axv,axv)
+    ax.set_xlabel(r'n_r')
+    ax.set_ylabel(r'$I_{\omega}$')
+    for msi in range(mss):
+        ms=msa[msi]
+        match pic:
+            case 0:
+                awv=wv[msi,:8]
+            case 1:
+                awv=wv[msi,5:]
+        ax.plot(axv,awv,label=f'ms={ms}')
+    legend = ax.legend(loc='lower center', shadow=True, fontsize='x-large')
+    fn=f'gen/shs-n_r-iw-gbtul-{pic}.pdf'
+    plt.savefig(fn)
+    print(f'Wrote {fn}')
+    plt.show()        
+fig, ax = plt.subplots()
+#ax.set(xlim=(1,max(xv)),ylim=(0,max(st)))
+ax.set_xlabel(r'n_r')
+ax.set_ylabel(r'solve time [s]')
+for msi in range(mss):
+    ms=msa[msi]
+    ax.plot(xv,st[msi],label=f'ms={ms}')
+legend = ax.legend(loc='upper left', shadow=True, fontsize='x-large')
+fn='gen/shs-n_r-gbtul-time.pdf'
+plt.savefig(fn)
+print(f'Wrote {fn}')
+plt.show()        
