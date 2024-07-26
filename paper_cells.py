@@ -142,69 +142,86 @@ for p in ("rhs",): # "rhs","u"
             section.write_warping_gltf()
             section.write_warping_ply()
 # %% shs-n_r
+"""
+Experiment on n_r option of rhs (points for describing rounding)
+and mesh size.
+"""
 import matplotlib.pyplot as plt
 import numpy as np
 import time
 import gc
-xv=[]
-wv=[]
-st=[]
 p="rhs"
 script="primitive"
 primitive=f"--primitive {p}"
 h=150
 w=h
 t=8
-ms=1e-4
-for n_r in range(2,24,1):
-    gc.collect()
-    ts=time.time()        
-    runfile(f'{script}.py',#noqa
-      args=f"""-A -W={w/1000} -H={h/1000} --thickness={t/1000}
-      --mesh_size={ms}
-      {primitive} --n_r={n_r}""")
-    elapsed=time.time()-ts
-    uc=section.default_filename("","solve")
-    print(f'{uc} took {elapsed:.3f} seconds')
-    xv.append(n_r)
-    nv=section.get_gamma()
-    wv.append(nv)  
-    st.append(elapsed)
-axv=xv[:8]
-awv=wv[:8]
-fig, ax = plt.subplots()
-ax.set_xticks(axv)
-ax.set_xlabel(r'n_r')
-ax.set_ylabel(r'Iw')
-ax.plot(axv,awv,'k',label=r'$I_{\omega}$')
-legend = ax.legend(loc='lower center', shadow=True, fontsize='x-large')
-legend.get_frame().set_facecolor('C0')
-fn='gen/shs-n_r-iw-a.pdf'
-plt.savefig(fn)
-print(f'Wrote {fn}')
-plt.show()        
-axv=xv[5:]
-awv=wv[5:]
-fig, ax = plt.subplots()
-ax.set_xticks(axv)
-ax.set_xlabel(r'n_r')
-ax.set_ylabel(r'Iw')
-ax.plot(axv,awv,'k',label=r'$I_{\omega}$')
-legend = ax.legend(loc='lower center', shadow=True, fontsize='x-large')
-legend.get_frame().set_facecolor('C0')
-fn='gen/shs-n_r-iw-b.pdf'
-plt.savefig(fn)
-print(f'Wrote {fn}')
-plt.show()        
+msa=["0.0001","0.00001"] # 1e-4,1e-5
+mss=len(msa)
+xv=list(range(2,9,1))+list(range(10,61,5))#range(2,9,1)+(range(10,61,5)
+n_rs=len(xv)
+wv=np.zeros((mss,n_rs))
+st=np.zeros((mss,n_rs))
+for msi in range(mss):
+    nri=0
+    for n_r in xv:
+        gc.collect()
+        ts=time.time()        
+        runfile(f'{script}.py',#noqa
+          args=f"""-A -W={w/1000} -H={h/1000} --thickness={t/1000}
+          --mesh_size={msa[msi]}
+          {primitive} --n_r={n_r}""")
+        elapsed=time.time()-ts
+        uc=section.default_filename("","solve")
+        print(f'{uc} took {elapsed:.3f} seconds')
+        # for table {tab:shs-values-rounded}
+        section.plot_mesh(
+            title=f'Mesh with mesh_size={msa[msi]} and n_r={n_r}',
+                          materials=False)
+        nv=section.get_gamma()
+        wv[msi,nri]=nv  
+        st[msi,nri]=elapsed
+        print(f'''Section-Properties({2*t},{msa[msi]},{n_r},\
+{section.num_nodes},{len(section.elements)})\
+ & {nv*1e12:.1f} \\(10^{-12}\\)\\\\''')
+        nri=nri+1
+for pic in range(2):
+    match pic:
+        case 0:
+            axv=xv[:8]
+        case 1:
+            axv=xv[5:]
+    fig, ax = plt.subplots()
+    ax.set_xticks(axv,axv)
+    ax.set_xlabel(r'n_r')
+    ax.set_ylabel(r'$I_{\omega}$')
+    for msi in range(mss):
+        ms=msa[msi]
+        match pic:
+            case 0:
+                awv=wv[msi,:8]
+            case 1:
+                awv=wv[msi,5:]
+        ax.plot(axv,awv,label=f'ms={ms}')
+    legend = ax.legend(loc='lower center', shadow=True, fontsize='x-large')
+    fn=f'gen/shs-n_r-iw-{pic}.pdf'
+    plt.savefig(fn)
+    print(f'Wrote {fn}')
+    plt.show()        
 fig, ax = plt.subplots()
 #ax.set(xlim=(1,max(xv)),ylim=(0,max(st)))
 ax.set_xlabel(r'n_r')
-ax.set_ylabel(r'time')
-ax.plot(xv,st,'k',label='Solve time')
-legend = ax.legend(loc='upper center', shadow=True, fontsize='x-large')
-legend.get_frame().set_facecolor('C0')
+ax.set_ylabel(r'solve time [s]')
+for msi in range(mss):
+    ms=msa[msi]
+    ax.plot(xv,st[msi],label=f'ms={ms}')
+legend = ax.legend(loc='upper left', shadow=True, fontsize='x-large')
 fn='gen/shs-n_r-time.pdf'
 plt.savefig(fn)
 print(f'Wrote {fn}')
 plt.show()        
+# %% shs-gbtul
+"""
+Experiment on n_r option of rhs with GBTUL.
+"""
 
