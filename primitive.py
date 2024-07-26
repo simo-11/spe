@@ -81,6 +81,8 @@ while simo.dev.run(args):
     if args.plot_mesh:
         section.plot_mesh()
     section.calculate_geometric_properties()
+    if args.gbtul:
+        section.run_gbtul()
     if bending:
         print(("A = {0:.3g}, Ixx = {2:.3g}, Iyy = {1:.3g}, Ixy = {3:.3g}")
               .format(section.get_area(),*section.get_ic()))

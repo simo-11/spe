@@ -11,6 +11,7 @@ import numpy as np
 import csv
 import math
 import json
+import subprocess
 import matplotlib.pyplot as plt
 from plyfile import PlyData, PlyElement
 
@@ -389,6 +390,25 @@ class DevSection(Section):
         PlyData([ply_nodes,ply_elements], text=False).write(gfn);
         print("Wrote {0}".format(fn))
 
+    def run_gbtul(self):
+        wd="gen"
+        gbt="../../gbtul/GBT/GBT.exe"
+        sp_args=[gbt]
+        try:
+            subprocess.run(sp_args,
+                       cwd=wd,
+                       capture_output=True,
+                       check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"""Running gbtul solver {gbt} failed
+stdout={e.stdout}
+stderr={e.stderr}             
+""")
+            raise
+        except BaseException:
+            print(f"""Running gbtul solver {gbt} failed""")
+            raise
+
 
     def done(self,ms,itDiff,iwDiff):
         if self.args.mesh_size:
@@ -461,12 +481,17 @@ def add_common_arguments(parser):
     parser.add_argument("--section_type")
     parser.add_argument("--gen", help="""directory for generated files""",
                         default="gen")
+    parser.add_argument("--gbtul", help="""run gbtul""",
+                        action="store_true")
 
 def check_arguments(parser,args):
     if (not args.plot_section and not args.plot_geometry
         and not args.run_analysis and not args.mesh_size
-        and not args.plot_warping_values):
+        and not args.plot_warping_values
+        and not args.gbtul
+        ):
         parser.print_help()
 
 def run(args):
-    return (args.run_analysis or args.mesh_size or args.plot_warping_values)
+    return (args.run_analysis or args.mesh_size 
+           or args.plot_warping_values or args.gbtul)

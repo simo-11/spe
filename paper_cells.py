@@ -241,7 +241,6 @@ st=np.zeros(n_rs)
 nri=0
 for n_r in xv:
     gc.collect()
-    section=None
     ts=time.time()      
     runfile(f'{script}.py',#noqa
       args=f"""--gbtul -W={w/1000} -H={h/1000} --thickness={t/1000}
