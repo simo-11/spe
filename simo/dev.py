@@ -12,7 +12,10 @@ import csv
 import math
 import json
 import subprocess
+import os.path
 import matplotlib.pyplot as plt
+import sectionproperties.pre.library.utils as sp_utils
+from sectionproperties.post.post import SectionProperties
 from plyfile import PlyData, PlyElement
 
 RECTANGLE='rectangle'
@@ -26,6 +29,7 @@ class DevSection(Section):
         super().__init__(*args, **kwargs)
         self.triangles=None
         self.args=None
+        self.gbtul=None
     """
     """
     def get_triangles(self):
@@ -152,7 +156,8 @@ class DevSection(Section):
             words.append("{0:g}".format(1000*self.args.radius))
         if self.uses_n_r():
             words.append("{0}".format(self.args.n_r))
-        words.append('{0}'.format(len(self.section_props.omega)))
+        if self.section_props.omega:
+            words.append('{0}'.format(len(self.section_props.omega)))
         return '-'.join(words)+suffix
 
     def uses_diameter(self):
@@ -390,25 +395,103 @@ class DevSection(Section):
         PlyData([ply_nodes,ply_elements], text=False).write(gfn);
         print("Wrote {0}".format(fn))
 
+    def init_gbt_rhs(self):
+        d=self.args.width
+        b=self.args.height
+        t=self.args.thickness
+        r=max(self.args.radius-t/2,0)
+        n_r=self.args.n_r
+        # adapted based on steel_sections.rectangular_hollow_section
+        # construct the center line points
+        points=[]
+        points += sp_utils.draw_radius((r, r), r, np.pi, n_r)
+        points += sp_utils.draw_radius((b - r, r), r, 1.5 * np.pi, n_r)
+        points += sp_utils.draw_radius((b - r, d - r), r, 0, n_r)
+        points += sp_utils.draw_radius((r, d - r), r, 0.5 * np.pi, n_r)
+        self.gbt_points=points
+        self.gbt_elements=[]
+        mi=len(points)
+        for i in range(1,mi+1):
+            if i==mi:
+                j=1
+            else:
+                j=i+1
+            e={'i':i,'j':j,'m':1,'inc':0,'t':t}
+            self.gbt_elements.append(e)
+
+    def write_gbtul(self):
+        match self.args.primitive:#noqa
+            case 'rhs':
+                self.init_gbt_rhs()
+            case _:
+                raise Exception(f'''{self.args.primitive} \
+ is not supported''')
+        with open(self.gfn('inp1.txt'), 'w') as f:
+            f.write(f"{len(self.gbt_points)}\n")
+            for p in self.gbt_points:
+                f.write(f"{p[0]:.4} {p[1]:.4}\n")                
+            f.write(f"{len(self.gbt_elements)}\n")
+            for e in self.gbt_elements:
+                f.write(f"{e['i']} {e['j']} {e['m']} {e['inc']} {e['t']}\n")
+            f.write("1\n") # material, currently fixed steel
+            E=21e10
+            nu=0.3
+            rho=7800
+            f.write(f"{E} {E} {nu} {nu} {E/(2*(1+nu))} {rho}\n")
+            #Length-Distributed Elastic Supports and Additional Masses
+            #Distributed along longitudinal strips
+            f.write("0\n\0\n")
+        with open(self.gfn('inp2.txt'), 'w') as f:
+            f.write("1 0 0 0\n")
+        with open(self.gfn('inp3.txt'), 'w') as f:
+            f.write("""1 0
+1
+3
+0
+1 0 0 0
+10 10                   
+""")
+        with open(self.gfn('inp4.txt'), 'w') as f:
+            f.write("""2
+30
+3
+1
+2
+1
+2
+4
+""")
+                
+    def read_gbtul(self):
+        na=np.fromfile(self.gfn('out1.txt'),sep=' ')
+        self.gbtul=SectionProperties(area=na[0],
+                                    gamma=na[3],
+                                    j=na[4]
+                                    )
+        
     def run_gbtul(self):
-        wd="gen"
-        gbt="../../gbtul/GBT/GBT.exe"
-        sp_args=[gbt]
+        if not os.path.isfile(self.args.gbt):
+            raise Exception(f'GBT is not availeble at {self.args.gbt}')
+        sp_args=[self.args.gbt]
+        od=self.gfn("/Output_Files")
+        if not os.path.isdir(od):
+            os.makedirs(od)
         try:
+            self.write_gbtul()
             subprocess.run(sp_args,
-                       cwd=wd,
+                       cwd=self.args.gen,
                        capture_output=True,
                        check=True)
+            self.read_gbtul()
         except subprocess.CalledProcessError as e:
-            print(f"""Running gbtul solver {gbt} failed
-stdout={e.stdout}
-stderr={e.stderr}             
+            print(f"""Running gbtul solver {self.args.gbt} failed
+stdout={e.stdout.decode()}
+stderr={e.stderr.decode()}             
 """)
             raise
         except BaseException:
-            print(f"""Running gbtul solver {gbt} failed""")
+            print(f"""Running gbtul solver {self.args.gbt} failed""")
             raise
-
 
     def done(self,ms,itDiff,iwDiff):
         if self.args.mesh_size:
@@ -483,6 +566,8 @@ def add_common_arguments(parser):
                         default="gen")
     parser.add_argument("--gbtul", help="""run gbtul""",
                         action="store_true")
+    parser.add_argument("--gbt",help="location of GBT solver", 
+                        default="../../gbtul/GBT/GBT.exe")
 
 def check_arguments(parser,args):
     if (not args.plot_section and not args.plot_geometry

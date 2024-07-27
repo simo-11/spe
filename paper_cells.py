@@ -246,11 +246,11 @@ for n_r in xv:
       args=f"""--gbtul -W={w/1000} -H={h/1000} --thickness={t/1000}
       {primitive} --n_r={n_r}""") 
     elapsed=time.time()-ts
-    if not section:
+    if not section.gbtul:
         raise Exception("Gbtul failed")
     uc=section.default_filename("","gbtul")
     print(f'{uc} took {elapsed:.3f} seconds')
-    nv=section.get_gamma()
+    nv=section.gbtul.get_gamma()
     wv[nri]=nv  
     st[nri]=elapsed
     # for table {tab:shs-values-rounded}
