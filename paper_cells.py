@@ -234,7 +234,7 @@ primitive=f"--primitive {p}"
 h=150
 w=h
 t=8
-xv=list(range(2,4,1))#+list(range(10,61,5))#range(2,9,1)+(range(10,61,5)
+xv=list(range(2,10,1))#+list(range(10,61,5))#range(2,9,1)+(range(10,61,5)
 n_rs=len(xv)
 wv=np.zeros(n_rs)
 st=np.zeros(n_rs)
@@ -250,12 +250,12 @@ for n_r in xv:
         raise Exception("Gbtul failed")
     uc=section.default_filename("","gbtul")
     print(f'{uc} took {elapsed:.3f} seconds')
-    nv=section.gbtul.get_gamma()
+    nv=section.gbtul.gamma
     wv[nri]=nv  
     st[nri]=elapsed
     # for table {tab:shs-values-rounded}
     print(f'''GBTUL({n_r})\
- & {nv*1e12:.1f} \\(10^{-12}\\)\\\\''')
+ & {nv*1e12:.1f} \\(10^\{-12}\\)\\\\''')
     nri=nri+1
 for pic in range(2):
     match pic:
@@ -267,15 +267,12 @@ for pic in range(2):
     ax.set_xticks(axv,axv)
     ax.set_xlabel(r'n_r')
     ax.set_ylabel(r'$I_{\omega}$')
-    for msi in range(mss):
-        ms=msa[msi]
-        match pic:
-            case 0:
-                awv=wv[msi,:8]
-            case 1:
-                awv=wv[msi,5:]
-        ax.plot(axv,awv,label=f'ms={ms}')
-    legend = ax.legend(loc='lower center', shadow=True, fontsize='x-large')
+    match pic:
+        case 0:
+            awv=wv[:8]
+        case 1:
+            awv=wv[5:]
+    ax.plot(axv,awv)
     fn=f'gen/shs-n_r-iw-gbtul-{pic}.pdf'
     plt.savefig(fn)
     print(f'Wrote {fn}')
@@ -284,10 +281,7 @@ fig, ax = plt.subplots()
 #ax.set(xlim=(1,max(xv)),ylim=(0,max(st)))
 ax.set_xlabel(r'n_r')
 ax.set_ylabel(r'solve time [s]')
-for msi in range(mss):
-    ms=msa[msi]
-    ax.plot(xv,st[msi],label=f'ms={ms}')
-legend = ax.legend(loc='upper left', shadow=True, fontsize='x-large')
+ax.plot(xv,st)
 fn='gen/shs-n_r-gbtul-time.pdf'
 plt.savefig(fn)
 print(f'Wrote {fn}')

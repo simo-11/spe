@@ -399,15 +399,20 @@ class DevSection(Section):
         d=self.args.width
         b=self.args.height
         t=self.args.thickness
-        r=max(self.args.radius-t/2,0)
+        ht=t/2
+        r=max(self.args.radius-ht,0)
         n_r=self.args.n_r
         # adapted based on steel_sections.rectangular_hollow_section
         # construct the center line points
         points=[]
-        points += sp_utils.draw_radius((r, r), r, np.pi, n_r)
-        points += sp_utils.draw_radius((b - r, r), r, 1.5 * np.pi, n_r)
-        points += sp_utils.draw_radius((b - r, d - r), r, 0, n_r)
-        points += sp_utils.draw_radius((r, d - r), r, 0.5 * np.pi, n_r)
+        points += sp_utils.draw_radius((ht + r, ht + r), r, np.pi, n_r)
+        points += sp_utils.draw_radius(
+            (b - ht - r, ht + r), r, 1.5 * np.pi, n_r
+        )
+        points += sp_utils.draw_radius((b - ht - r, d - ht - r), r, 0, n_r)
+        points += sp_utils.draw_radius(
+            (ht + r, d - ht - r), r, 0.5 * np.pi, n_r
+        )
         self.gbt_points=points
         self.gbt_elements=[]
         mi=len(points)
@@ -478,10 +483,14 @@ class DevSection(Section):
             os.makedirs(od)
         try:
             self.write_gbtul()
-            subprocess.run(sp_args,
+            cps=subprocess.run(sp_args,
                        cwd=self.args.gen,
                        capture_output=True,
                        check=True)
+            with open(self.gfn(f'gbtout-{self.args.n_r}.txt'), 'w') as f:
+                f.write(cps.stdout.decode())
+            with open(self.gfn(f'gbterr-{self.args.n_r}.txt'), 'w') as f:
+                f.write(cps.stderr.decode())
             self.read_gbtul()
         except subprocess.CalledProcessError as e:
             print(f"""Running gbtul solver {self.args.gbt} failed
