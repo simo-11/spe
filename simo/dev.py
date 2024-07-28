@@ -17,6 +17,9 @@ import matplotlib.pyplot as plt
 import sectionproperties.pre.library.utils as sp_utils
 from sectionproperties.post.post import SectionProperties
 from plyfile import PlyData, PlyElement
+import types
+
+consts = types.SimpleNamespace()
 
 RECTANGLE='rectangle'
 CIRCULAR='circular'
@@ -24,6 +27,8 @@ RHS='rhs'
 CHS='chs'
 PRIMITIVE_CHOICES=[RECTANGLE,CIRCULAR,RHS,CHS]
 COLD_FORMED_U='cold-formed-u'
+consts.RHS=RHS
+consts.COLD_FORMED_U=COLD_FORMED_U
 class DevSection(Section):
     def __init__(self,*args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -395,6 +400,31 @@ class DevSection(Section):
         PlyData([ply_nodes,ply_elements], text=False).write(gfn);
         print("Wrote {0}".format(fn))
 
+    def init_gbt_u(self):
+        d=self.args.width
+        b=self.args.height
+        t=self.args.thickness
+        ht=t/2
+        r=max(self.args.radius-ht,0)
+        n_r=self.args.n_r
+        points=[]
+        points.append((b,ht))
+        # construct the inner bottom left radius
+        points += sp_utils.draw_radius([ht + r, ht + r], 
+                              r, 1.5 * np.pi, n_r, False)
+        # construct the inner top left radius
+        points += sp_utils.draw_radius([ht + r, d - ht - r], 
+                              r, np.pi, n_r, False)
+        # top right corner
+        points.append((b,d-ht))
+        self.gbt_points=points
+        self.gbt_elements=[]
+        mi=len(points)
+        for i in range(mi-1):
+            j=i+1
+            e={'i':i,'j':j,'m':1,'inc':0,'t':t}
+            self.gbt_elements.append(e)
+
     def init_gbt_rhs(self):
         d=self.args.width
         b=self.args.height
@@ -416,18 +446,35 @@ class DevSection(Section):
         self.gbt_points=points
         self.gbt_elements=[]
         mi=len(points)
-        for i in range(1,mi+1):
-            if i==mi:
-                j=1
+        for i in range(mi):
+            if i==mi-1:
+                j=0
             else:
                 j=i+1
             e={'i':i,'j':j,'m':1,'inc':0,'t':t}
             self.gbt_elements.append(e)
 
+    def plot_gbt(self):
+        fig, ax = plt.subplots()
+        ax.set_aspect('equal')
+        for f in self.gbt_elements:
+            i_node=self.gbt_points[f['i']]
+            j_node=self.gbt_points[f['j']]               
+            ax.plot(
+                [i_node[0], j_node[0]],
+                [i_node[1], j_node[1]],
+                "ko-",
+                markersize=2,
+                linewidth=1.5,
+            )
+        return (fig,ax)   
+            
     def write_gbtul(self):
         match self.args.primitive:#noqa
-            case 'rhs':
+            case consts.RHS:
                 self.init_gbt_rhs()
+            case consts.COLD_FORMED_U:
+                self.init_gbt_u()
             case _:
                 raise Exception(f'''{self.args.primitive} \
  is not supported''')
@@ -437,7 +484,8 @@ class DevSection(Section):
                 f.write(f"{p[0]:.4} {p[1]:.4}\n")                
             f.write(f"{len(self.gbt_elements)}\n")
             for e in self.gbt_elements:
-                f.write(f"{e['i']} {e['j']} {e['m']} {e['inc']} {e['t']}\n")
+                f.write((f"{e['i']+1} {e['j']+1} "
+                          f"{e['m']} {e['inc']} {e['t']}\n"))
             f.write("1\n") # material, currently fixed steel
             E=21e10
             nu=0.3

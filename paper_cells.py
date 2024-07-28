@@ -194,7 +194,7 @@ for pic in range(2):
     fig, ax = plt.subplots()
     ax.set_xticks(axv,axv)
     ax.set_xlabel(r'n_r')
-    ax.set_ylabel(r'$I_{\omega}$')
+    ax.set_ylabel(r'$I_{\omega} [m^6]$')
     for msi in range(mss):
         ms=msa[msi]
         match pic:
@@ -220,69 +220,79 @@ fn='gen/shs-n_r-time.pdf'
 plt.savefig(fn)
 print(f'Wrote {fn}')
 plt.show()        
-# %% shs-gbtul
+# %% gbtul
 """
-Experiment on n_r option of rhs with GBTUL.
+Experiment on n_r option with GBTUL.
 """
 import matplotlib.pyplot as plt
 import numpy as np
 import time
 import gc
-p="rhs"
-script="primitive"
-primitive=f"--primitive {p}"
-h=150
-w=h
-t=8
-xv=list(range(1,10,1))#+list(range(10,61,5))#range(2,9,1)+(range(10,61,5)
-n_rs=len(xv)
-wv=np.zeros(n_rs)
-st=np.zeros(n_rs)
-nri=0
-for n_r in xv:
-    gc.collect()
-    ts=time.time()      
-    runfile(f'{script}.py',#noqa
-      args=f"""--gbtul -W={w/1000} -H={h/1000} --thickness={t/1000}
-      {primitive} --n_r={n_r}""") 
-    elapsed=time.time()-ts
-    if not section.gbtul:
-        raise Exception("Gbtul failed")
-    uc=section.default_filename("","gbtul")
-    print(f'{uc} took {elapsed:.3f} seconds')
-    nv=section.gbtul.gamma
-    wv[nri]=nv  
-    st[nri]=elapsed
-    # for table {tab:shs-values-rounded}
-    print(f'''GBTUL({n_r})\
+for p in ("u",): # "rhs","u"
+    match p:#noqa
+        case "rhs":
+            script="primitive"
+            primitive=f"--primitive {p}"
+            h=150
+            w=h
+            t=8
+        case "u":
+            script="cold-formed-u"
+            primitive=""
+            h=100
+            w=50
+            t=4
+    xv=list(range(1,5,1))
+    n_rs=len(xv)
+    wv=np.zeros(n_rs)
+    st=np.zeros(n_rs)
+    nri=0
+    for n_r in xv:
+        gc.collect()
+        ts=time.time()      
+        runfile(f'{script}.py',#noqa
+          args=f"""--gbtul -W={w/1000} -H={h/1000} --thickness={t/1000}
+          {primitive} --n_r={n_r}""") 
+        elapsed=time.time()-ts
+        if not section.gbtul:
+            raise Exception("Gbtul failed")
+        uc=section.default_filename("","gbtul")
+        print(f'{uc} took {elapsed:.3f} seconds')
+        nv=section.gbtul.gamma
+        wv[nri]=nv  
+        st[nri]=elapsed
+        (fig,ax)=section.plot_gbt()
+        ax.set_title(label=f"Iw from GBTUL={nv:.3}")
+        plt.show()
+        # for table {tab:shs-values-rounded}
+        print(f'''GBTUL({n_r})\
  & {nv*1e12:.1f} \\(10^{{-12}}\\)\\\\''')
-    nri=nri+1
-for pic in range(2):
-    match pic:
-        case 0:
-            axv=xv[:8]
-        case 1:
-            axv=xv[5:]
+        nri=nri+1
+    for pic in range(1):
+        match pic:
+            case 0:
+                axv=xv[:8]
+            case 1:
+                axv=xv[5:]
+        fig, ax = plt.subplots()
+        ax.set_xticks(axv,axv)
+        ax.set_xlabel(r'n_r')
+        ax.set_ylabel(r'$I_{\omega} [m^6]$')
+        match pic:
+            case 0:
+                awv=wv[:8]
+            case 1:
+                awv=wv[5:]
+        ax.plot(axv,awv)
+        fn=f'gen/{p}-n_r-iw-gbtul-{pic}.pdf'
+        plt.savefig(fn)
+        print(f'Wrote {fn}')
+        plt.show()        
     fig, ax = plt.subplots()
-    ax.set_xticks(axv,axv)
-    ax.set_xlabel(r'n_r')
-    ax.set_ylabel(r'$I_{\omega}$')
-    match pic:
-        case 0:
-            awv=wv[:8]
-        case 1:
-            awv=wv[5:]
-    ax.plot(axv,awv)
-    fn=f'gen/shs-n_r-iw-gbtul-{pic}.pdf'
+    ax.set_xlabel(f'n_r for corner of {p}')
+    ax.set_ylabel(r'solve time [s]')
+    ax.plot(xv,st)
+    fn=f'gen/{p}-n_r-gbtul-time.pdf'
     plt.savefig(fn)
     print(f'Wrote {fn}')
     plt.show()        
-fig, ax = plt.subplots()
-#ax.set(xlim=(1,max(xv)),ylim=(0,max(st)))
-ax.set_xlabel(r'n_r')
-ax.set_ylabel(r'solve time [s]')
-ax.plot(xv,st)
-fn='gen/shs-n_r-gbtul-time.pdf'
-plt.savefig(fn)
-print(f'Wrote {fn}')
-plt.show()        

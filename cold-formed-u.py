@@ -73,8 +73,8 @@ if args.n_r>0:
     if args.radius<args.thickness:
         args.radius=2*args.thickness
     if args.n_r==1:
-       args.n_r=2
-else:
+       args.n_r=0
+if args.n_r==0:       
     args.radius=0
 args.title=("""{5}: width={0:.5g}, height={1:.5g},
 USection: thickness={2:.5g}, outer radius={3:.5g}, n_r={4}""".
@@ -140,6 +140,10 @@ while simo.dev.run(args):
     if args.plot_mesh:
         section.plot_mesh()
     section.calculate_geometric_properties()
+    if args.gbtul:
+        section.run_gbtul()
+        if not args.run_analysis:
+            break    
     if bending:
         print(("A = {0:.3g}, Ixx = {2:.3g}, Iyy = {1:.3g}, Ixy = {3:.3g}")
               .format(section.get_area(),*section.get_ic()))
