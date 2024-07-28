@@ -442,30 +442,10 @@ class DevSection(Section):
             E=21e10
             nu=0.3
             rho=7800
-            f.write(f"{E} {E} {nu} {nu} {E/(2*(1+nu))} {rho}\n")
+            f.write(f"{E:.4} {E:.4} {nu} {nu} {E/(2*(1+nu)):.4} {rho}\n")
             #Length-Distributed Elastic Supports and Additional Masses
             #Distributed along longitudinal strips
-            f.write("0\n\0\n")
-        with open(self.gfn('inp2.txt'), 'w') as f:
-            f.write("1 0 0 0\n")
-        with open(self.gfn('inp3.txt'), 'w') as f:
-            f.write("""1 0
-1
-3
-0
-1 0 0 0
-10 10                   
-""")
-        with open(self.gfn('inp4.txt'), 'w') as f:
-            f.write("""2
-30
-3
-1
-2
-1
-2
-4
-""")
+            f.write("0\n0\n")
                 
     def read_gbtul(self):
         na=np.fromfile(self.gfn('out1.txt'),sep=' ')
@@ -477,7 +457,7 @@ class DevSection(Section):
     def run_gbtul(self):
         if not os.path.isfile(self.args.gbt):
             raise Exception(f'GBT is not availeble at {self.args.gbt}')
-        sp_args=[self.args.gbt]
+        sp_args=[self.args.gbt,"1"]
         od=self.gfn("/Output_Files")
         if not os.path.isdir(od):
             os.makedirs(od)

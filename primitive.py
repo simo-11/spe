@@ -34,8 +34,8 @@ elif args.primitive==simo.dev.RHS:
         if args.radius<args.thickness:
             args.radius=2*args.thickness
         if args.n_r==1:
-           args.n_r=2
-    else:
+           args.n_r=0
+    if args.n_r==0:       
         args.radius=0
     args.title=("""{2}: width={0:.5g}, height={1:.5g},
  thickness={3:.5g}, outer radius={4:.5g}, n_r={5}""".

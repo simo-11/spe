@@ -183,7 +183,7 @@ for msi in range(mss):
         # for table {tab:shs-values-rounded}
         print(f'''Section-Properties({2*t},{msa[msi]},{n_r},\
 {section.num_nodes},{len(section.elements)})\
- & {nv*1e12:.1f} \\(10^{-12}\\)\\\\''')
+ & {nv*1e12:.1f} \\(10^{{-12}}\\)\\\\''')
         nri=nri+1
 for pic in range(2):
     match pic:
@@ -234,7 +234,7 @@ primitive=f"--primitive {p}"
 h=150
 w=h
 t=8
-xv=list(range(2,10,1))#+list(range(10,61,5))#range(2,9,1)+(range(10,61,5)
+xv=list(range(1,10,1))#+list(range(10,61,5))#range(2,9,1)+(range(10,61,5)
 n_rs=len(xv)
 wv=np.zeros(n_rs)
 st=np.zeros(n_rs)
@@ -255,7 +255,7 @@ for n_r in xv:
     st[nri]=elapsed
     # for table {tab:shs-values-rounded}
     print(f'''GBTUL({n_r})\
- & {nv*1e12:.1f} \\(10^\{-12}\\)\\\\''')
+ & {nv*1e12:.1f} \\(10^{{-12}}\\)\\\\''')
     nri=nri+1
 for pic in range(2):
     match pic:
