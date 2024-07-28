@@ -401,8 +401,8 @@ class DevSection(Section):
         print("Wrote {0}".format(fn))
 
     def init_gbt_u(self):
-        d=self.args.width
-        b=self.args.height
+        b=self.args.width
+        d=self.args.height
         t=self.args.thickness
         ht=t/2
         r=max(self.args.radius-ht,0)
@@ -426,8 +426,8 @@ class DevSection(Section):
             self.gbt_elements.append(e)
 
     def init_gbt_rhs(self):
-        d=self.args.width
-        b=self.args.height
+        b=self.args.width
+        d=self.args.height
         t=self.args.thickness
         ht=t/2
         r=max(self.args.radius-ht,0)
@@ -456,7 +456,6 @@ class DevSection(Section):
 
     def plot_gbt(self):
         fig, ax = plt.subplots()
-        ax.set_aspect('equal')
         for f in self.gbt_elements:
             i_node=self.gbt_points[f['i']]
             j_node=self.gbt_points[f['j']]               
@@ -467,6 +466,7 @@ class DevSection(Section):
                 markersize=2,
                 linewidth=1.5,
             )
+        ax.set_aspect('equal',adjustable='box')
         return (fig,ax)   
             
     def write_gbtul(self):

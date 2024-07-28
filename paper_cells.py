@@ -236,13 +236,14 @@ for p in ("u",): # "rhs","u"
             h=150
             w=h
             t=8
+            xv=list(range(1,5,1))
         case "u":
             script="cold-formed-u"
             primitive=""
             h=100
             w=50
             t=4
-    xv=list(range(1,5,1))
+            xv=list(range(1,8,1))
     n_rs=len(xv)
     wv=np.zeros(n_rs)
     st=np.zeros(n_rs)
