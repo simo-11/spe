@@ -161,7 +161,7 @@ class DevSection(Section):
             words.append("{0:g}".format(1000*self.args.radius))
         if self.uses_n_r():
             words.append("{0}".format(self.args.n_r))
-        if self.section_props.omega:
+        if not self.section_props.omega is None:
             words.append('{0}'.format(len(self.section_props.omega)))
         return '-'.join(words)+suffix
 
