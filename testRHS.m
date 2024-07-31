@@ -94,6 +94,8 @@ for i=1:n
         else  
             ft=model;
         end
+        tic;
+        cpu_start=cputime; %#ok<NASGU>
         switch fitMethod
             case 'fit'
                 [f,gof,output,warnstr,errstr,convmsg]=...
@@ -116,6 +118,10 @@ for i=1:n
                 w=@(x,y)reshape(fnval(f,[x(:)';y(:)']),...
                     size(x,1),[]);
         end
+        es=sprintf("o.%s_fit_walltime=toc;",model);
+        eval(es);
+        es=sprintf("o.%s_fit_cputime=cputime-cpu_start;",model);
+        eval(es);
         if ao.debugLevel>1
             disp(f);
             switch fitMethod
@@ -177,6 +183,10 @@ for i=1:n
                     fprintf("model=%s-%s, Iw=%.3g, cub took %.3G ms\n", ...
                         model,cub_with_card,Iw,elapsed*1000);
                 end
+                tf=@()w(cao.centers(:,1),cao.centers(:,2)); %#ok<NASGU>
+                es=sprintf("o.%s_%s_%d_walltime=timeit(tf);",...
+                    model,cub,card);
+                eval(es);                
                 if bitand(ao.plot,4) && ci==1
                     s=sprintf("%s for %s",model,fn);
                     figure('Name',s);
