@@ -22,6 +22,8 @@ Iw_a=integral2(w,0,rect_width,0,rect_height,...
       AbsTol=abs_tol,RelTol=0.0001);
 titletext=sprintf("Analytical Iw=%.4G",Iw_a);
 title(titletext);
+da=daspect;
+daspect([da(2) da(2) da(3)]);
 %% create tps using increasing number of sites
 figure(401)
 for rand_count=3:30:500
