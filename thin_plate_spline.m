@@ -10,8 +10,8 @@ rect_nMax=3;
 rect_x0=rect_a;
 rect_y0=rect_b;
 abs_tol=rect_width^3*rect_height^3/144;
-include_lowess=0; % it is not suitable for this case 
-point_set=haltonset(2,skip=1);
+include_lowess=0; % lowess is not suitable for this case 
+point_set=haltonset(2,skip=30);
 figure(400)
 [X,Y]=meshgrid(0:rect_width/51:rect_width,...
     0:rect_height/51:rect_height);
@@ -40,16 +40,21 @@ end
 %% create fits using increasing number of points
 models=["linearinterp" "cubicinterp" ...
     "biharmonicinterp" "thinplateinterp"];
+line_specs=["--." "-o" "-^" "-v" "-."];
 if include_lowess
     models=[models "lowess"]; %#ok<UNRCH>
 end
 x_values=[20:5:100 100:30:501];
+%x_values=20:5:35; % use to view "lucky" guesses
 x_len=size(x_values,2);
 for mi=1:models.size(2)
-    cmd=sprintf("%s_values=zeros(1,%d);",models(mi),x_len);
+    cmd=sprintf("%s_values=[];",models(mi));
     eval(cmd);
 end
 plot_line="plot(";
+mp=get(0,'MonitorPositions');
+fig_height=mp(4)/models.size(2)-20;
+fig_width=mp(3)/5;
 for ri=1:x_len
     rand_count=x_values(ri);
     % create points on edges to help with some models
@@ -64,7 +69,12 @@ for ri=1:x_len
     c_y = rect_height*[e_p_0_0 e_p_0_1 e_p_1_1 e_p_1_0 h_set(:,2)'];
     c_z = rect_psi(c_x,c_y,rect_x0,rect_y0,rect_nMax,rect_a,rect_b);
     for mi=1:models.size(2)
-        figure(410+mi);
+        fig=figure(410+mi);
+        if rand_count==x_values(1)
+            fig.Position=[0 (mi-1)*fig_height fig_width fig_height];
+            fig.MenuBar="none";
+            fig.DockControls="off";
+        end
         [ff,gof,output] = fit([c_x',c_y'],c_z',models(mi));
         plot(ff);
         da=daspect;
@@ -85,20 +95,23 @@ for ri=1:x_len
             else
                 comma=",";
             end
-            plot_line=sprintf("%s%sx_values,%s_values",...
-                plot_line,comma,models(mi));
+            plot_line=sprintf('%s%spx_values,%s_values,"%s"',...
+                plot_line,comma,models(mi),line_specs(mi));
         end
     end
-    figure(420);
+    fig=figure(420);
+    fig.Position=[fig_width fig_height fig_width fig_height];
     if rand_count==x_values(1)
         plot_line=sprintf("%s)",plot_line);
     end
+    px_values=x_values(1:ri);
     eval(plot_line);
     title('I_w error');
     xlabel('number of points');
     ylabel('Error %');
-    yscale('log');
-    xscale('log');
+    ylim([0 10])
+    yscale('linear');
+    xscale('linear');
     legend(models(:));
     pause(0.1);
 end
