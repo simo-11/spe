@@ -10,6 +10,7 @@ rect_nMax=3;
 rect_x0=rect_a;
 rect_y0=rect_b;
 abs_tol=rect_width^3*rect_height^3/144;
+include_lowess=0; % it is not suitable for this case 
 point_set=haltonset(2,skip=1);
 figure(400)
 [X,Y]=meshgrid(0:rect_width/51:rect_width,...
@@ -38,8 +39,11 @@ for rand_count=3:30:500
 end
 %% create fits using increasing number of points
 models=["linearinterp" "cubicinterp" ...
-    "biharmonicinterp" "thinplateinterp","lowess"];
-x_values=15:30:501;
+    "biharmonicinterp" "thinplateinterp"];
+if include_lowess
+    models=[models "lowess"]; %#ok<UNRCH>
+end
+x_values=[20:5:100 100:30:501];
 x_len=size(x_values,2);
 for mi=1:models.size(2)
     cmd=sprintf("%s_values=zeros(1,%d);",models(mi),x_len);
@@ -48,9 +52,16 @@ end
 plot_line="plot(";
 for ri=1:x_len
     rand_count=x_values(ri);
+    % create points on edges to help with some models
+    edge_point_count=floor(sqrt(rand_count));
+    d_e=1/(edge_point_count-1);
+    e_p_0_1=linspace(0,1-d_e,edge_point_count-1);
+    e_p_1_1=linspace(1,1,edge_point_count);
+    e_p_1_0=linspace(1,0+d_e,edge_point_count-1);
+    e_p_0_0=linspace(0,0,edge_point_count);
     h_set=net(point_set,rand_count);
-    c_x = rect_width* [0 1 1 0 h_set(:,1)'];
-    c_y = rect_height*[0 0 1 1 h_set(:,2)'];
+    c_x = rect_width* [e_p_0_1 e_p_1_1 e_p_1_0 e_p_0_0 h_set(:,1)'];
+    c_y = rect_height*[e_p_0_0 e_p_0_1 e_p_1_1 e_p_1_0 h_set(:,2)'];
     c_z = rect_psi(c_x,c_y,rect_x0,rect_y0,rect_nMax,rect_a,rect_b);
     for mi=1:models.size(2)
         figure(410+mi);
@@ -65,7 +76,7 @@ for ri=1:x_len
         cmd=sprintf("%s_values(%d)=ev;",models(mi),ri);
         eval(cmd);
         titletext=sprintf("%s, point count=%d, Iw=%.4G",...
-            models(mi),rand_count+4,Iw);
+            models(mi),size(c_x,2),Iw);
         title(titletext);
         pause(0.1);
         if rand_count==x_values(1)
@@ -81,11 +92,13 @@ for ri=1:x_len
     figure(420);
     if rand_count==x_values(1)
         plot_line=sprintf("%s)",plot_line);
-        title('I_w error');
-        xlabel('number of random points');
-        ylabel('Error %');
-        yscale('log');
-        legend(models(:));
     end
     eval(plot_line);
+    title('I_w error');
+    xlabel('number of points');
+    ylabel('Error %');
+    yscale('log');
+    xscale('log');
+    legend(models(:));
+    pause(0.1);
 end
