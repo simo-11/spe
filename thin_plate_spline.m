@@ -10,6 +10,8 @@ rect_nMax=3;
 rect_x0=rect_a;
 rect_y0=rect_b;
 abs_tol=rect_width^3*rect_height^3/144;
+test_for_duplicates=1;
+plot_fitted_surfaces=0;
 include_lowess=0; % lowess is not suitable for this case 
 point_set=haltonset(2,skip=30);
 figure(400)
@@ -40,9 +42,9 @@ for rand_count=3:30:500
     pause(0.2);
 end
 %% create fits using increasing number of points
-models=["linearinterp" "cubicinterp" ...
+models=["linearinterp" "cubicinterp" "poly44" "poly55"...
     "biharmonicinterp" "thinplateinterp"];
-line_specs=["--." "-o" "-^" "-v" "-."];
+line_specs=["--." "-o" "--x" "-^" "-v" ":o" ":x" "-."];
 if include_lowess
     models=[models "lowess"]; %#ok<UNRCH>
 end
@@ -69,28 +71,38 @@ for ri=1:x_len
     h_set=net(point_set,rand_count);
     c_x = rect_width* [e_p_0_1 e_p_1_1 e_p_1_0 e_p_0_0 h_set(:,1)'];
     c_y = rect_height*[e_p_0_0 e_p_0_1 e_p_1_1 e_p_1_0 h_set(:,2)'];
+    A=[c_x;c_y]';
+    if test_for_duplicates
+        [B,BG]=groupcounts(A);
+        if any(B>1)
+            error("duplicates found")
+        end
+    end
     c_z = rect_psi(c_x,c_y,rect_x0,rect_y0,rect_nMax,rect_a,rect_b);
     for mi=1:models.size(2)
-        fig=figure(410+mi);
-        if rand_count==x_values(1)
-            fig.Position=[0 (mi-1)*fig_height fig_width fig_height];
-            fig.MenuBar="none";
-            fig.DockControls="off";
+        model=models(mi);
+        [ff,gof,output] = fit([c_x',c_y'],c_z',model);
+        if plot_fitted_surfaces
+            fig=figure(410+mi); %#ok<UNRCH>
+            if rand_count==x_values(1)
+                fig.Position=[0 (mi-1)*fig_height fig_width fig_height];
+                fig.MenuBar="none";
+                fig.DockControls="off";
+            end
+            plot(ff);
+            da=daspect;
+            daspect([da(2) da(2) da(3)]);
+            w=@(x,y)ff(x,y).^2;
+            Iw=integral2(w,0,rect_width,0,rect_height,...
+                AbsTol=abs_tol,RelTol=0.0001);
+            ev=100*abs((Iw-Iw_a)/Iw_a);
+            cmd=sprintf("%s_values(%d)=ev;",model,ri);
+            eval(cmd);
+            titletext=sprintf("%s, point count=%d, Iw=%.4G",...
+                model,size(c_x,2),Iw);
+            title(titletext);
+            pause(0.1);
         end
-        [ff,gof,output] = fit([c_x',c_y'],c_z',models(mi));
-        plot(ff);
-        da=daspect;
-        daspect([da(2) da(2) da(3)]);
-        w=@(x,y)ff(x,y).^2;
-        Iw=integral2(w,0,rect_width,0,rect_height,...
-            AbsTol=abs_tol,RelTol=0.0001);
-        ev=100*abs((Iw-Iw_a)/Iw_a);
-        cmd=sprintf("%s_values(%d)=ev;",models(mi),ri);
-        eval(cmd);
-        titletext=sprintf("%s, point count=%d, Iw=%.4G",...
-            models(mi),size(c_x,2),Iw);
-        title(titletext);
-        pause(0.1);
         if rand_count==x_values(1)
             if mi==1
                 comma="";
@@ -98,7 +110,7 @@ for ri=1:x_len
                 comma=",";
             end
             plot_line=sprintf('%s%spx_values,%s_values,"%s"',...
-                plot_line,comma,models(mi),line_specs(mi));
+                plot_line,comma,model,line_specs(mi));
         end
     end
     fig=figure(420);
