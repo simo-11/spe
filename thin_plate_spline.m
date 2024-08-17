@@ -11,7 +11,7 @@ rect_x0=rect_a;
 rect_y0=rect_b;
 abs_tol=rect_width^3*rect_height^3/144;
 test_for_duplicates=1;
-plot_fitted_surfaces=0;
+plot_fitted_surfaces=1;
 include_lowess=0; % lowess is not suitable for this case 
 point_set=haltonset(2,skip=30);
 figure(400)
@@ -42,14 +42,14 @@ for rand_count=3:30:500
     pause(0.2);
 end
 %% create fits using increasing number of points
-models=["linearinterp" "cubicinterp" "poly44" "poly55"...
+models=["linearinterp" "cubicinterp" "poly44"...
     "biharmonicinterp" "thinplateinterp"];
 line_specs=["--." "-o" "--x" "-^" "-v" ":o" ":x" "-."];
 if include_lowess
     models=[models "lowess"]; %#ok<UNRCH>
 end
 x_values=[20:5:100 100:30:501];
-%x_values=20:5:35; % use to view "lucky" guesses
+x_values=10:1:17; % use to view shapes at low point counts
 x_len=size(x_values,2);
 for mi=1:models.size(2)
     cmd=sprintf("%s_values=[];",models(mi));
@@ -65,23 +65,36 @@ for ri=1:x_len
     edge_point_count=floor(sqrt(rand_count));
     d_e=1/(edge_point_count-1);
     e_p_0_1=linspace(0,1-d_e,edge_point_count-1);
-    e_p_1_1=linspace(1,1,edge_point_count);
+    e_p_1_1=linspace(1,1,edge_point_count-1);
     e_p_1_0=linspace(1,0+d_e,edge_point_count-1);
-    e_p_0_0=linspace(0,0,edge_point_count);
+    e_p_0_0=linspace(0,0,edge_point_count-1);
     h_set=net(point_set,rand_count);
     c_x = rect_width* [e_p_0_1 e_p_1_1 e_p_1_0 e_p_0_0 h_set(:,1)'];
     c_y = rect_height*[e_p_0_0 e_p_0_1 e_p_1_1 e_p_1_0 h_set(:,2)'];
-    A=[c_x;c_y]';
     if test_for_duplicates
+        A=[c_x;c_y]';
         [B,BG]=groupcounts(A);
         if any(B>1)
-            error("duplicates found")
+            fprintf("Duplicates found\n");
+            BM=cell2mat(BG);
+            duplicate_rows=find(B>1);
+            for di=duplicate_rows'
+                fprintf("count=%d x=%g, y=%g\n",...
+                    B(di),BM(di,1),BM(di,2));
+            end    
+            error("x,y duplicates found, see details above")
         end
     end
     c_z = rect_psi(c_x,c_y,rect_x0,rect_y0,rect_nMax,rect_a,rect_b);
     for mi=1:models.size(2)
         model=models(mi);
         [ff,gof,output] = fit([c_x',c_y'],c_z',model);
+        w=@(x,y)ff(x,y).^2;
+        Iw=integral2(w,0,rect_width,0,rect_height,...
+            AbsTol=abs_tol,RelTol=0.0001);
+        ev=100*(Iw-Iw_a)/Iw_a;
+        cmd=sprintf("%s_values(%d)=ev;",model,ri);
+        eval(cmd);
         if plot_fitted_surfaces
             fig=figure(410+mi); %#ok<UNRCH>
             if rand_count==x_values(1)
@@ -92,12 +105,6 @@ for ri=1:x_len
             plot(ff);
             da=daspect;
             daspect([da(2) da(2) da(3)]);
-            w=@(x,y)ff(x,y).^2;
-            Iw=integral2(w,0,rect_width,0,rect_height,...
-                AbsTol=abs_tol,RelTol=0.0001);
-            ev=100*abs((Iw-Iw_a)/Iw_a);
-            cmd=sprintf("%s_values(%d)=ev;",model,ri);
-            eval(cmd);
             titletext=sprintf("%s, point count=%d, Iw=%.4G",...
                 model,size(c_x,2),Iw);
             title(titletext);
@@ -123,7 +130,8 @@ for ri=1:x_len
     title('I_w error');
     xlabel('number of points');
     ylabel('Error %');
-    ylim([0 10])
+    %ylim([-25 10]);
+    ylim("auto");
     yscale('linear');
     xscale('linear');
     legend(models(:));
