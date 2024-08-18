@@ -48,8 +48,9 @@ line_specs=["--." "-o" "--x" "-^" "-v" ":o" ":x" "-."];
 if include_lowess
     models=[models "lowess"]; %#ok<UNRCH>
 end
-x_values=[20:5:100 100:30:501];
-x_values=10:1:17; % use to view shapes at low point counts
+x_values=[20:5:100 100:30:501]; %#ok<NASGU>
+%x_values=10:1:17;% use to view shapes at low point counts
+x_values=24:26;
 x_len=size(x_values,2);
 for mi=1:models.size(2)
     cmd=sprintf("%s_values=[];",models(mi));
@@ -59,6 +60,7 @@ plot_line="plot(";
 mp=get(0,'MonitorPositions');
 fig_height=mp(4)/models.size(2)-20;
 fig_width=mp(3)/5;
+px_values=[];
 for ri=1:x_len
     rand_count=x_values(ri);
     % create points on edges to help with some models
@@ -96,13 +98,13 @@ for ri=1:x_len
         cmd=sprintf("%s_values(%d)=ev;",model,ri);
         eval(cmd);
         if plot_fitted_surfaces
-            fig=figure(410+mi); %#ok<UNRCH>
-            if rand_count==x_values(1)
+            fig=figure(410+mi);
+            if ri==1
                 fig.Position=[0 (mi-1)*fig_height fig_width fig_height];
-                fig.MenuBar="none";
-                fig.DockControls="off";
+                fig.MenuBar='figure';
+                fig.DockControls="on";
             end
-            plot(ff);
+            plot(ff,[c_x',c_y'],c_z');
             da=daspect;
             daspect([da(2) da(2) da(3)]);
             titletext=sprintf("%s, point count=%d, Iw=%.4G",...
@@ -110,7 +112,7 @@ for ri=1:x_len
             title(titletext);
             pause(0.1);
         end
-        if rand_count==x_values(1)
+        if ri==1
             if mi==1
                 comma="";
             else
@@ -122,10 +124,10 @@ for ri=1:x_len
     end
     fig=figure(420);
     fig.Position=[fig_width fig_height fig_width fig_height];
-    if rand_count==x_values(1)
+    if ri==1
         plot_line=sprintf("%s)",plot_line);
     end
-    px_values=x_values(1:ri);
+    px_values(ri)=size(c_x,2); %#ok<SAGROW>
     eval(plot_line);
     title('I_w error');
     xlabel('number of points');
