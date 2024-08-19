@@ -11,7 +11,7 @@ rect_x0=rect_a;
 rect_y0=rect_b;
 abs_tol=rect_width^3*rect_height^3/144;
 test_for_duplicates=1;
-plot_fitted_surfaces=1;
+plot_fitted_surfaces=0;
 include_lowess=0; % lowess is not suitable for this case 
 point_set=haltonset(2,skip=30);
 figure(400)
@@ -49,22 +49,25 @@ if include_lowess
     models=[models "lowess"]; %#ok<UNRCH>
 end
 x_values=[20:5:100 100:30:501]; %#ok<NASGU>
-%x_values=10:1:17;% use to view shapes at low point counts
-x_values=24:26;
+%x_values=4:1:17;% use to view shapes at low point counts
+%x_values=4:17;
 x_len=size(x_values,2);
 for mi=1:models.size(2)
     cmd=sprintf("%s_values=[];",models(mi));
     eval(cmd);
+    cmd=sprintf("%s_x_values=[];",models(mi));
+    eval(cmd);
 end
-plot_line="plot(";
 mp=get(0,'MonitorPositions');
 fig_height=mp(4)/models.size(2)-20;
 fig_width=mp(3)/5;
 px_values=[];
 for ri=1:x_len
+    plot_line="plot(";
     rand_count=x_values(ri);
     % create points on edges to help with some models
     edge_point_count=floor(sqrt(rand_count));
+    %edge_point_count=5;
     d_e=1/(edge_point_count-1);
     e_p_0_1=linspace(0,1-d_e,edge_point_count-1);
     e_p_1_1=linspace(1,1,edge_point_count-1);
@@ -88,17 +91,27 @@ for ri=1:x_len
         end
     end
     c_z = rect_psi(c_x,c_y,rect_x0,rect_y0,rect_nMax,rect_a,rect_b);
+    active_models=strings(0);
     for mi=1:models.size(2)
         model=models(mi);
+        aFittype=fittype(model);
+        if numcoeffs(aFittype)>size(c_x,2)
+            continue;
+        end
+        active_models(size(active_models,2)+1)=model;
+        cmd=sprintf("x_i=size(%s_x_values,2)+1;",model);
+        eval(cmd);
+        cmd=sprintf("%s_x_values(%d)=size(c_x,2);",model,x_i);
+        eval(cmd);
         [ff,gof,output] = fit([c_x',c_y'],c_z',model);
         w=@(x,y)ff(x,y).^2;
         Iw=integral2(w,0,rect_width,0,rect_height,...
             AbsTol=abs_tol,RelTol=0.0001);
         ev=100*(Iw-Iw_a)/Iw_a;
-        cmd=sprintf("%s_values(%d)=ev;",model,ri);
+        cmd=sprintf("%s_values(%d)=ev;",model,x_i);
         eval(cmd);
         if plot_fitted_surfaces
-            fig=figure(410+mi);
+            fig=figure(410+mi); %#ok<UNRCH>% if not plotting
             if ri==1
                 fig.Position=[0 (mi-1)*fig_height fig_width fig_height];
                 fig.MenuBar='figure';
@@ -112,30 +125,28 @@ for ri=1:x_len
             title(titletext);
             pause(0.1);
         end
-        if ri==1
-            if mi==1
-                comma="";
-            else
-                comma=",";
-            end
-            plot_line=sprintf('%s%spx_values,%s_values,"%s"',...
-                plot_line,comma,model,line_specs(mi));
+        if mi==1
+            comma="";
+        else
+            comma=",";
         end
+        plot_line=sprintf('%s%s%s_x_values,%s_values,"%s"',...
+            plot_line,comma,model,model,line_specs(mi));
     end
-    fig=figure(420);
-    fig.Position=[fig_width fig_height fig_width fig_height];
-    if ri==1
-        plot_line=sprintf("%s)",plot_line);
-    end
-    px_values(ri)=size(c_x,2); %#ok<SAGROW>
+    fig=figure(420+edge_point_count);
+    fig.Position=[fig_width edge_point_count*20 ...
+        fig_width fig_height];
+    plot_line=sprintf("%s)",plot_line);
     eval(plot_line);
-    title('I_w error');
+    titletext=sprintf("I_w error with %d edge points",...
+        edge_point_count);
+    title(titletext);
     xlabel('number of points');
     ylabel('Error %');
     %ylim([-25 10]);
     ylim("auto");
     yscale('linear');
     xscale('linear');
-    legend(models(:));
+    legend(active_models(:));
     pause(0.1);
 end
