@@ -48,8 +48,8 @@ line_specs=["--." "-o" "--x" "-^" "-v" ":o" ":x" "-."];
 if include_lowess
     models=[models "lowess"]; %#ok<UNRCH>
 end
-random_counts=[20:10:100 100:30:400];
-edge_point_counts=[2:1:10 12:3:30];
+random_counts=[10:10:100 100:30:400];
+edge_point_counts=2:1:10;% [12:3:30];
 %x_values=4:1:17;% use to view shapes at low point counts
 %x_values=4:17;
 edge_size=size(edge_point_counts,2);
@@ -137,9 +137,11 @@ for ei=1:edge_size
                 plot_line,comma,model,model,line_specs(mi));
         end
         fig=figure(420+edge_point_count);
-        fig.Position=[fig_width+edge_point_count*10 ...
-            edge_point_count*50 ...
-            fig_width fig_height];
+        if ei==1
+            fig.Position=[fig_width+edge_point_count*10 ...
+                edge_point_count*50 ...
+                fig_width fig_height];
+        end
         plot_line=sprintf("%s)",plot_line);
         eval(plot_line);
         titletext=sprintf("I_w error with %d edge points",...
