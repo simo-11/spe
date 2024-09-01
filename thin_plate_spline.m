@@ -12,7 +12,6 @@ rect_y0=rect_b;
 abs_tol=rect_width^3*rect_height^3/144;
 test_for_duplicates=1;
 plot_fitted_surfaces=0;
-include_lowess=0; % lowess is not suitable for this case 
 point_set=haltonset(2,skip=30);
 figure(400)
 [X,Y]=meshgrid(0:rect_width/51:rect_width,...
@@ -26,28 +25,10 @@ titletext=sprintf("Analytical Iw=%.4G",Iw_a);
 title(titletext);
 da=daspect;
 daspect([da(2) da(2) da(3)]);
-%% create tps using increasing number of sites
-figure(401)
-for rand_count=3:30:500
-    h_set=net(point_set,rand_count);
-    c_x = rect_width* [0 1 1 0 h_set(:,1)'];
-    c_y = rect_height*[0 0 0 1 h_set(:,2)'];
-    c_z = rect_psi(c_x,c_y,rect_x0,rect_y0,rect_nMax,rect_a,rect_b);
-    tpaps_x=[c_x; c_y];
-    tpaps_y=c_z;
-    tps = tpaps(tpaps_x,tpaps_y,1);
-    fnplt(tps);
-    titletext=sprintf("TPS, site count=%d",rand_count+2);
-    title(titletext);
-    pause(0.2);
-end
 %% create fits using increasing number of points
 models=["linearinterp" "cubicinterp" "poly44"...
     "biharmonicinterp" "thinplateinterp"];
 line_specs=["--." "-o" "--x" "-^" "-v" ":o" ":x" "-."];
-if include_lowess
-    models=[models "lowess"]; %#ok<UNRCH>
-end
 random_counts=[10:10:100 100:30:400];
 edge_point_counts=2:1:10;% [12:3:30];
 %x_values=4:1:17;% use to view shapes at low point counts
