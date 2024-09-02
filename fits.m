@@ -1,8 +1,8 @@
 %% set parameters and plot warping function based on analytical solution
 rect_width=0.1;
-rect_height=0.1;
+rect_height=0.01;
 if rect_height > rect_width
-    error("rect_width must be > rect_height")
+    error("rect_width must be => rect_height")
 end
 rect_a=rect_width/2;
 rect_b=rect_height/2;
@@ -12,6 +12,7 @@ rect_y0=rect_b;
 abs_tol=rect_width^3*rect_height^3/144;
 test_for_duplicates=1;
 plot_fitted_surfaces=0;
+save_xy_plot=1;
 point_set=haltonset(2,skip=30);
 figure(400)
 [X,Y]=meshgrid(0:rect_width/51:rect_width,...
@@ -21,16 +22,18 @@ surf(X,Y,Z);
 w=@(x,y)rect_psi(x,y,rect_x0,rect_y0,rect_nMax,rect_a,rect_b).^2;
 Iw_a=integral2(w,0,rect_width,0,rect_height,...
       AbsTol=abs_tol,RelTol=0.0001);
-titletext=sprintf("Analytical Iw=%.4G",Iw_a);
+titletext=sprintf("Analytical %Gx%G, n=%d, Iw=%.4G",...
+    rect_width,rect_height,rect_nMax,Iw_a);
 title(titletext);
 da=daspect;
 daspect([da(2) da(2) da(3)]);
 %% create fits using increasing number of points
 models=["linearinterp" "cubicinterp" "poly44"...
-    "biharmonicinterp" "thinplateinterp"];
+     "thinplateinterp"];
+% biharmonicinterp is similar as thinplateinterp
 line_specs=["--." "-o" "--x" "-^" "-v" ":o" ":x" "-."];
 random_counts=[10:10:100 100:30:400];
-edge_point_counts=2:1:10;% [12:3:30];
+edge_point_counts=5:2:9;% [12:3:30];
 %x_values=4:1:17;% use to view shapes at low point counts
 %x_values=4:17;
 edge_size=size(edge_point_counts,2);
@@ -125,16 +128,30 @@ for ei=1:edge_size
         end
         plot_line=sprintf("%s)",plot_line);
         eval(plot_line);
-        titletext=sprintf("I_w error with %d edge points",...
-            edge_point_count);
+        titletext=sprintf("I_w error for %Gx%G with %d edge points",...
+            rect_width,rect_height,edge_point_count);
         title(titletext);
         xlabel('total number of points');
         ylabel('Error %');
-        %ylim([-25 10]);
-        ylim("auto");
+        ylim([-10 10]);
+        %ylim("auto");
         yscale('linear');
         xscale('linear');
         legend(active_models(:));
+        if ri==random_size && save_xy_plot
+            h=fig;
+            set(h,'Units','Inches','PaperPositionMode','Auto',...
+                'PaperUnits','Inches');
+            % After modifying size of figure and 
+            % at least once before printing
+            pos = get(h,'Position');
+            set(h, 'PaperSize',[pos(3), pos(4)])
+            % Save to pdf using screen resolution
+            pdf_name=sprintf("gen/Iw_error-%G-%G-%d.pdf",...
+                rect_width*1000,rect_height*1000,edge_point_count);
+            print(h,pdf_name,'-dpdf','-r0');
+            fprintf("Saved %s\n",pdf_name);
+        end
         pause(0.1);
     end
 end
