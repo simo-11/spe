@@ -6,7 +6,7 @@ if rect_height > rect_width
 end
 rect_a=rect_width/2;
 rect_b=rect_height/2;
-rect_nMax=3;
+rect_nMax=4;
 rect_x0=rect_a;
 rect_y0=rect_b;
 abs_tol=rect_width^3*rect_height^3/144;
@@ -22,8 +22,8 @@ surf(X,Y,Z);
 w=@(x,y)rect_psi(x,y,rect_x0,rect_y0,rect_nMax,rect_a,rect_b).^2;
 Iw_a=integral2(w,0,rect_width,0,rect_height,...
       AbsTol=abs_tol,RelTol=0.0001);
-titletext=sprintf("Analytical %Gx%G, n=%d, Iw=%.4G",...
-    rect_width,rect_height,rect_nMax,Iw_a);
+titletext=sprintf("Analytical %Gx%G mm, n=%d, Iw=%.4G",...
+    rect_width*1000,rect_height*1000,rect_nMax,Iw_a);
 title(titletext);
 da=daspect;
 daspect([da(2) da(2) da(3)]);
@@ -121,15 +121,15 @@ for ei=1:edge_size
                 plot_line,comma,model,model,line_specs(mi));
         end
         fig=figure(420+edge_point_count);
-        if ei==1
+        if ri==1
             fig.Position=[fig_width+edge_point_count*10 ...
                 edge_point_count*50 ...
                 fig_width fig_height];
         end
         plot_line=sprintf("%s)",plot_line);
         eval(plot_line);
-        titletext=sprintf("I_w error for %Gx%G with %d edge points",...
-            rect_width,rect_height,edge_point_count);
+        titletext=sprintf("I_w error with %d edge points",...
+            edge_point_count);
         title(titletext);
         xlabel('total number of points');
         ylabel('Error %');
