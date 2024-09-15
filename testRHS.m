@@ -5,7 +5,7 @@ arguments
     ao.t=8
     ao.r=16 % outer radius
     ao.n_r=8
-    ao.models=["cubicinterp","tps"]
+    ao.models=["cubicinterp","thinplatespline"]
     ao.cubs=["rbfcub"]
     ao.scat_type='halton'
     ao.cards=[10,20,25,30]    
@@ -19,6 +19,7 @@ arguments
     ao.rsquareMin=0.2
     ao.check_area=1
     ao.latex=1
+    ao.tau_latex=1
     ao.max_area_error_percent=0.1
 end
 %{
@@ -34,6 +35,7 @@ cs=size(ao.cubs,2);
 H=ao.height/1000;
 W=ao.width/1000;
 T=ao.t/1000;
+R=ao.r/1000;
 % define one quarter
 if ao.r==0
     XV=[0 W/2 W/2 T T   0  ];
@@ -56,6 +58,12 @@ domain.domain='rectangle';
 domain.dbox=[xlimit; ylimit];
 cao.debugLevel=ao.debugLevel;
 cao.plot=bitand(ao.plot,2);
+if ao.tau_latex
+   ds=R/sqrt(2);
+   ds2=(R+T)/sqrt(2);
+   xvalues=[W-R W-R W-ds W-ds2 W   W-T];
+   yvalues=[H   H-T H-ds H-ds2 H-R H-R];
+end
 if bitand(ao.plot,1)
     fig=gcf;
     if isempty(fig.Name)
@@ -73,6 +81,10 @@ for i=1:n
     fn=list(i).name;
     fprintf("file=%s\n",fn);
     file=sprintf("%s/%s",list(i).folder,fn);
+    if ao.tau_latex
+        tlfn=append("gen/",replace(fn,".csv",".ltx"));
+        tlFileID=fopen(tlfn,'w');
+    end
     t=readtable(file);
     rfn=replace(fn,"warping","results");
     rfn=replace(rfn,"csv","json");
@@ -129,6 +141,20 @@ for i=1:n
                 disp(gof);
             end
         end
+        if ao.tau_latex
+            fprintf(tlFileID,"%s%s\n",...
+                model,"\\");
+            wvalues=w(xvalues,yvalues);
+            [dxvalues,dyvalues]=differentiate(f,xvalues,yvalues);
+            for vi=1:size(xvalues,2)
+                x_s=xvalues(vi)-cao.spr.sc(1);
+                y_s=yvalues(vi)-cao.spr.sc(2);
+                fprintf(tlFileID, ...
+                    "%.3G & %.3G & %.3G & %.3G & %.3G%s\n",...
+                x_s,y_s,wvalues(vi),...
+                dxvalues(vi),dyvalues(vi),"\\");
+            end
+        end
         for ci=1:cs
             cub=ao.cubs(ci);
             for card=ao.cards
@@ -176,9 +202,9 @@ for i=1:n
                     continue;
                 end
                 if ao.latex
-                    fprintf("%s%s-%s & %.1f %s & %.1f %s\n", ...
+                    fprintf("%s%s-%s & %.1f & %.1f %s\n", ...
                     "\hspace{1cm}",model,cub_with_card,...
-                    Iw*1e12,"\(10^{-12}\)",epc,"\\");
+                    Iw*1e12,epc,"\\");
                 else
                     fprintf("model=%s-%s, Iw=%.3g, cub took %.3G ms\n", ...
                         model,cub_with_card,Iw,elapsed*1000);
@@ -229,6 +255,10 @@ for i=1:n
         end
     end
     c{i}=o;
+if ao.tau_latex
+    fprintf("Wrote %s\n",tlfn);
+    fclose(tlFileID);
+end
 end
 end
 
