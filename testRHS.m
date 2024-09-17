@@ -34,7 +34,6 @@ cs=size(ao.cubs,2);
 H=ao.height/1000;
 W=ao.width/1000;
 T=ao.t/1000;
-R=ao.r/1000;
 % define one quarter
 if ao.r==0
     XV=[0 W/2 W/2 T T   0  ];

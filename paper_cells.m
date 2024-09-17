@@ -61,5 +61,5 @@ sr=testRHS(height=150,width=150,t=8,r=0,n_r=0,models=ao.rhs_models,...
 %% SHS 150x150x8 with rounded corners
 rr=testRHS(height=150,width=150,t=8,r=16,n_r=8,models=ao.rhs_models,...
     cubs=ao.rhs_cubs,debug=ao.debugLevel,cards=ao.rhs_cards);
-%% tau_latex for first SHS 150x150x8 with rounded corners
+%% latex report for first SHS 150x150x8 with rounded corners
 latex_rr_report(rr{1})

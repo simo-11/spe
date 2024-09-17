@@ -10,6 +10,25 @@ T=ao.t/1000;
 R=ao.r/1000;
 ds=R/sqrt(2);
 ds2=(R+T)/sqrt(2);
+%
+% p1  p2
+% p6
+%          p5
+%          p4    p3
+fl=1.6; % fraction of length added after curve >sqrt(2)
+p1=[W-fl*ds H];
+p2=[W-ds H];
+p3=[W   H-fl*ds];
+p4=[W-T H-fl*ds];
+p5=[W-T H-ds];
+p6=[W-fl*ds H-T];
+cc=[W-R H-R];
+n=20;
+[~,c1]=draw_radius(cc,R,pi/2,n,0,pi/2);
+[~,c2]=draw_radius(cc,R-T,0,n,1,pi/2);
+points=[p1;p2;c1;p3;p4;p5;c2;p6];
+ps=polyshape(points);
+% values are in upper right corner
 xvalues=[W-R W-R W-ds W-ds2 W   W-T];
 yvalues=[H   H-T H-ds H-ds2 H-R H-R];
 %{
@@ -27,6 +46,11 @@ cao.spr=jsondecode(fileread(rfn));
 tlfn=replace(ro.file,"warping","latex-report");
 tlfn=replace(tlfn,".csv",".ltx");
 tlFileID=fopen(tlfn,'w');
+fig=figure(317);
+fp=sprintf("Selected points for shear stresses at corner");
+fig.Name=fp;
+plot(ps);
+axis equal;
 for mi=1:ms
     model=ao.models(mi);
     fprintf(tlFileID,"%s%s\n",...
