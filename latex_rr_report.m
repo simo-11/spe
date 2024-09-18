@@ -9,7 +9,6 @@ W=ao.width/1000;
 T=ao.t/1000;
 R=ao.r/1000;
 ds=R/sqrt(2);
-ds2=(R+T)/sqrt(2);
 %
 % p1  p2
 % p6
@@ -23,23 +22,21 @@ p4=[W-T H-fl*ds];
 p5=[W-T H-ds];
 p6=[W-fl*ds H-T];
 cc=[W-R H-R];
-n=20;
+n=11;
+ci=floor(n/2)+1; % center index
 [~,c1]=draw_radius(cc,R,pi/2,n,0,pi/2);
 [~,c2]=draw_radius(cc,R-T,0,n,1,pi/2);
 points=[p1;p2;c1;p3;p4;p5;c2;p6];
 ps=polyshape(points);
-% values are in upper right corner
-xvalues=[W-R W-R W-ds W-ds2 W   W-T];
-yvalues=[H   H-T H-ds H-ds2 H-R H-R];
 %{
-pull points a little bit out of bounds to allow
+values are in upper right corner
+pull points abit out of bounds to allow
 numerical differentiation to be done without extrapolation
 as is needed in cubicinterp
 %}
-mx = 2*eps^(1/3)*max(1,W);
-my = 2*eps^(1/3)*max(1,H);
-xvalues=xvalues-mx;
-yvalues=yvalues-my;
+abit=W/1000;
+xvalues=[W-R W-R c1(ci,1)-abit c2(ci,1) W-abit   W-T];
+yvalues=[H-abit  H-T c1(ci,1)-abit c2(ci,1) H-R H-R];
 rfn=replace(ro.file,"warping","results");
 rfn=replace(rfn,"csv","json");
 cao.spr=jsondecode(fileread(rfn));
@@ -51,6 +48,12 @@ fp=sprintf("Selected points for shear stresses at corner");
 fig.Name=fp;
 plot(ps);
 axis equal;
+for vi=1:size(xvalues,2)
+    x_s=xvalues(vi)-cao.spr.sc(1);
+    y_s=yvalues(vi)-cao.spr.sc(2);
+    txt=sprintf("(%.3G,%.3G)",x_s,y_s);
+    text(xvalues(vi),yvalues(vi),txt);
+end
 for mi=1:ms
     model=ao.models(mi);
     fprintf(tlFileID,"%s%s\n",...
