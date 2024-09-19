@@ -22,7 +22,7 @@ p4=[W-T H-fl*ds];
 p5=[W-T H-ds];
 p6=[W-fl*ds H-T];
 cc=[W-R H-R];
-n=11;
+n=21;
 ci=floor(n/2)+1; % center index
 [~,c1]=draw_radius(cc,R,pi/2,n,0,pi/2);
 [~,c2]=draw_radius(cc,R-T,0,n,1,pi/2);
@@ -47,13 +47,16 @@ fig=figure(317);
 fp=sprintf("Selected points for shear stresses at corner");
 fig.Name=fp;
 plot(ps);
+titletext=sprintf("Model with %d points",size(ro.t,1));
+title(titletext);
 axis equal;
 for vi=1:size(xvalues,2)
-    x_s=xvalues(vi)-cao.spr.sc(1);
-    y_s=yvalues(vi)-cao.spr.sc(2);
-    txt=sprintf("(%.3G,%.3G)",x_s,y_s);
+    x_s=1000*(xvalues(vi)-cao.spr.sc(1));
+    y_s=1000*(yvalues(vi)-cao.spr.sc(2));
+    txt=sprintf("  (%.3G,%.3G)",x_s,y_s);
     text(xvalues(vi),yvalues(vi),txt);
 end
+line(xvalues,yvalues,'LineStyle','none','Marker','o')
 for mi=1:ms
     model=ao.models(mi);
     fprintf(tlFileID,"%s%s\n",...
@@ -64,13 +67,23 @@ for mi=1:ms
     wvalues=w(xvalues,yvalues);
     [dxvalues,dyvalues]=differentiate(f,xvalues,yvalues);
     for vi=1:size(xvalues,2)
-        x_s=xvalues(vi)-cao.spr.sc(1);
-        y_s=yvalues(vi)-cao.spr.sc(2);
+        x_s=1000*(xvalues(vi)-cao.spr.sc(1));
+        y_s=1000*(yvalues(vi)-cao.spr.sc(2));
+        dx_s=1000*dxvalues(vi);
+        dy_s=1000*dyvalues(vi);
         fprintf(tlFileID, ...
-            "%.3G & %.3G & %.3G & %.3G & %.3G%s\n",...
-        x_s,y_s,wvalues(vi),...
-        dxvalues(vi),dyvalues(vi),"\\");
+            "%.3G & %.3G & %.2f & %.3G & %.3G%s\n",...
+        x_s,y_s,1e6*wvalues(vi),...
+        dx_s,dy_s,"\\");
     end
 end
 fprintf("Wrote %s\n",tlfn);
-fclose(tlFileID);    
+fclose(tlFileID);
+h=fig;
+set(h,'Units','Inches','PaperPositionMode','Auto',...
+    'PaperUnits','Inches');
+pos = get(h,'Position');
+set(h, 'PaperSize',[pos(3), pos(4)])
+pdf_name=sprintf("gen/points_for_stress.pdf");
+print(h,pdf_name,'-dpdf','-r0');
+fprintf("Saved %s\n",pdf_name);
