@@ -47,8 +47,6 @@ fig=figure(317);
 fp=sprintf("Selected points for shear stresses at corner");
 fig.Name=fp;
 plot(ps);
-titletext=sprintf("Model with %d points",size(ro.t,1));
-title(titletext);
 axis equal;
 for vi=1:size(xvalues,2)
     x_s=1000*(xvalues(vi)-cao.spr.sc(1));
@@ -65,16 +63,17 @@ for mi=1:ms
     eval(es);
     w=@(x,y)f(x,y);
     wvalues=w(xvalues,yvalues);
-    [dxvalues,dyvalues]=differentiate(f,xvalues,yvalues);
+    [dxvalues,dyvalues,fxx,~,fyy]=differentiate(f,xvalues,yvalues);
     for vi=1:size(xvalues,2)
         x_s=1000*(xvalues(vi)-cao.spr.sc(1));
         y_s=1000*(yvalues(vi)-cao.spr.sc(2));
         dx_s=1000*dxvalues(vi);
         dy_s=1000*dyvalues(vi);
+        laplace=fxx(vi)+fyy(vi);
         fprintf(tlFileID, ...
-            "%.3G & %.3G & %.2f & %.3G & %.3G%s\n",...
+            "%.3G & %.3G & %.2f & %.3G & %.3G & %.3G%s\n",...
         x_s,y_s,1e6*wvalues(vi),...
-        dx_s,dy_s,"\\");
+        dx_s,dy_s,laplace,"\\");
     end
 end
 fprintf("Wrote %s\n",tlfn);

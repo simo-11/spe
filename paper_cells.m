@@ -58,9 +58,15 @@ ru=testU(height=100,width=50,t=4,r=8,n_r=8,models=ao.u_models,...
 sr=testRHS(height=150,width=150,t=8,r=0,n_r=0,models=ao.rhs_models,...
     cubs=ao.rhs_cubs,debug=ao.debugLevel,cards=ao.rhs_cards ...
     );
-%% SHS 150x150x8 with rounded corners
-rr=testRHS(height=150,width=150,t=8,r=16,n_r=8,models=ao.rhs_models,...
+%% SHS 150x150x8 with rounded corners using n_r=8
+rr8=testRHS(height=150,width=150,t=8,r=16,n_r=8,models=ao.rhs_models,...
     cubs=ao.rhs_cubs,debug=ao.debugLevel,cards=ao.rhs_cards);
-%% latex report for first SHS 150x150x8 with rounded corners
+%% latex report for first SHS 150x150x8 with rounded corners, n_r=8
 % > echodemo('paper_cells',10)
-latex_rr_report(rr{1})
+latex_rr_report(rr8{1})
+%% SHS 150x150x8 with rounded corners using n_r=24
+rr24=testRHS(height=150,width=150,t=8,r=16,n_r=24,models=ao.rhs_models,...
+    cubs=ao.rhs_cubs,debug=ao.debugLevel,cards=ao.rhs_cards);
+%% latex report for first SHS 150x150x8 with rounded corners, n_r=24
+% > echodemo('paper_cells',12)
+latex_rr_report(rr24{1})

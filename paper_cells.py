@@ -87,7 +87,7 @@ plt.show()
 # %% U and SHS
 import matplotlib.pyplot as plt
 import time
-for p in ("u",): # "rhs","u"
+for p in ("rhs",): # "rhs","u"
     match p:#noqa
         case "rhs":
             script="primitive"
@@ -107,7 +107,7 @@ for p in ("u",): # "rhs","u"
         if r=="s":
             n_r_s=(0,)
         else:
-            n_r_s=range(8,15,4)
+            n_r_s=range(24,25,4)
         for n_r in n_r_s:
             ts=time.time()        
             runfile(f'{script}.py',#noqa
