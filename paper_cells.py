@@ -117,7 +117,6 @@ for p in ("rhs",): # "rhs","u"
             elapsed=time.time()-ts
             uc=section.default_filename("","solve")
             print(f'{uc} took {elapsed:.3f} seconds')
-            pdf=plt.figure()
             fn=section.gfn(section.default_filename(".pdf","geometry"))
             section.geometry.plot_geometry(
                 labels=()

@@ -55,6 +55,15 @@ for vi=1:size(xvalues,2)
     text(xvalues(vi),yvalues(vi),txt);
 end
 line(xvalues,yvalues,'LineStyle','none','Marker','o')
+save_pdf(fig,"points_for_stress");
+domain.vertices=ps.Vertices;
+domain.polyshape=ps;
+domain.domain='rectangle';
+[xlimit,ylimit]=boundingbox(domain.polyshape);
+domain.dbox=[xlimit; ylimit];
+[t,~,~]=define_scattered_pointset(30,domain);
+X=t(:,1);
+Y=t(:,2);
 for mi=1:ms
     model=ao.models(mi);
     fprintf(tlFileID,"%s%s\n",...
@@ -75,14 +84,17 @@ for mi=1:ms
         x_s,y_s,1e6*wvalues(vi),...
         dx_s,dy_s,laplace,"\\");
     end
+    fig=figure(317+mi);
+    hold off;
+    fp=sprintf("Shear stresses at corner using %s",model);
+    fig.Name=fp;
+    plot(ps);
+    axis equal;
+    hold on;
+    [dxvalues,dyvalues]=differentiate(f,X,Y);
+    quiver([X;X],[Y;Y],[dxvalues;-Y],[dyvalues;X]);
+    fn=sprintf("shear_stress_using_%s",model);
+    save_pdf(fig,fn);
 end
 fprintf("Wrote %s\n",tlfn);
 fclose(tlFileID);
-h=fig;
-set(h,'Units','Inches','PaperPositionMode','Auto',...
-    'PaperUnits','Inches');
-pos = get(h,'Position');
-set(h, 'PaperSize',[pos(3), pos(4)])
-pdf_name=sprintf("gen/points_for_stress.pdf");
-print(h,pdf_name,'-dpdf','-r0');
-fprintf("Saved %s\n",pdf_name);
