@@ -43,9 +43,9 @@ cao.spr=jsondecode(fileread(rfn));
 tlfn=replace(ro.file,"warping","latex-report");
 tlfn=replace(tlfn,".csv",".ltx");
 tlFileID=fopen(tlfn,'w');
-fig=figure(317);
+pfig=figure(317);
 fp=sprintf("Selected points for shear stresses at corner");
-fig.Name=fp;
+pfig.Name=fp;
 plot(ps);
 axis equal;
 for vi=1:size(xvalues,2)
@@ -55,7 +55,6 @@ for vi=1:size(xvalues,2)
     text(xvalues(vi),yvalues(vi),txt);
 end
 line(xvalues,yvalues,'LineStyle','none','Marker','o')
-save_pdf(fig,"points_for_stress");
 domain.vertices=ps.Vertices;
 domain.polyshape=ps;
 domain.domain='rectangle';
@@ -84,6 +83,15 @@ for mi=1:ms
         x_s,y_s,1e6*wvalues(vi),...
         dx_s,dy_s,laplace,"\\");
     end
+    if model=="cubicinterp"
+        figure(pfig);
+        hold on
+        qr=quiver(xvalues,yvalues,-yvalues,xvalues,0.8);
+        qr.Color="red";
+        scale=qr.ScaleFactor;
+        qw=quiver(xvalues,yvalues,scale*dxvalues,scale*dyvalues,'off');
+        qw.Color="blue";        
+    end
     fig=figure(317+mi);
     hold off;
     fp=sprintf("Shear stresses at corner using %s",model);
@@ -92,9 +100,15 @@ for mi=1:ms
     axis equal;
     hold on;
     [dxvalues,dyvalues]=differentiate(f,X,Y);
-    quiver([X;X],[Y;Y],[dxvalues;-Y],[dyvalues;X]);
-    fn=sprintf("shear_stress_using_%s",model);
+    % rotation related values first as they are larger
+    qr=quiver(X,Y,-Y,X,0.8);
+    qr.Color="red";
+    scale=qr.ScaleFactor;
+    qw=quiver(X,Y,scale*dxvalues,scale*dyvalues,'off');
+    qw.Color="blue";
+    fn=sprintf("rr_shear_stress_using_%s",model);
     save_pdf(fig,fn);
 end
 fprintf("Wrote %s\n",tlfn);
 fclose(tlFileID);
+save_pdf(pfig,"points_for_stress");
