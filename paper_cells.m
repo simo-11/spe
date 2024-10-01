@@ -69,4 +69,6 @@ rr24=testRHS(height=150,width=150,t=8,r=16,n_r=24,models=ao.rhs_models,...
     cubs=ao.rhs_cubs,debug=ao.debugLevel,cards=ao.rhs_cards);
 %% latex report for first SHS 150x150x8 with rounded corners, n_r=24
 % > echodemo('paper_cells',12)
+rr24{1}.ao.rr_card=150; % 
+rr24{1}.ao.rr_fl=0; % ~1.6 for paper, max 12.3
 latex_rr_report(rr24{1})

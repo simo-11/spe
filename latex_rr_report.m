@@ -14,7 +14,22 @@ ds=R/sqrt(2);
 % p6
 %          p5
 %          p4    p3
-fl=1.6; % fraction of length added after curve >sqrt(2)
+% fraction of length added after curve >sqrt(2) and <W-ds
+fl=ao.rr_fl;
+if fl<=0
+    syms nice_fl;
+    D=min(W,H);
+    nice_fl_value=solve(D-nice_fl*ds==D/2,nice_fl);
+    fl=double(nice_fl_value);
+end
+if fl<sqrt(2)
+    error("ro.ao.rr_fl must be >%.3G but was %.3G",sqrt(2),fl);
+end
+syms max_fl;
+max_fl_value=solve(min(W,H)-max_fl*ds==ds,max_fl);
+if fl>max_fl_value
+    error("ro.ao.rr_fl must be <%.3G but was %.3G",max_fl_value,fl);
+end
 p1=[W-fl*ds H];
 p2=[W-ds H];
 p3=[W   H-fl*ds];
@@ -44,6 +59,7 @@ tlfn=replace(ro.file,"warping","latex-report");
 tlfn=replace(tlfn,".csv",".ltx");
 tlFileID=fopen(tlfn,'w');
 pfig=figure(317);
+hold off;
 fp=sprintf("Selected points for shear stresses at corner");
 pfig.Name=fp;
 plot(ps);
@@ -60,7 +76,7 @@ domain.polyshape=ps;
 domain.domain='rectangle';
 [xlimit,ylimit]=boundingbox(domain.polyshape);
 domain.dbox=[xlimit; ylimit];
-[t,~,~]=define_scattered_pointset(30,domain);
+[t,~,~]=define_scattered_pointset(ao.rr_card,domain);
 X=t(:,1);
 Y=t(:,2);
 for mi=1:ms
@@ -86,7 +102,8 @@ for mi=1:ms
     if model=="cubicinterp"
         figure(pfig);
         hold on
-        qr=quiver(xvalues,yvalues,-yvalues,xvalues,0.8);
+        qr=quiver(xvalues,yvalues,...
+            cao.spr.sc(2)-yvalues,xvalues-cao.spr.sc(1),0.8);
         qr.Color="red";
         scale=qr.ScaleFactor;
         qw=quiver(xvalues,yvalues,scale*dxvalues,scale*dyvalues,'off');
@@ -94,18 +111,31 @@ for mi=1:ms
     end
     fig=figure(317+mi);
     hold off;
-    fp=sprintf("Shear stresses at corner using %s",model);
+    fp=sprintf("Shear stresses components at corner using %s",model);
     fig.Name=fp;
     plot(ps);
     axis equal;
     hold on;
     [dxvalues,dyvalues]=differentiate(f,X,Y);
     % rotation related values first as they are larger
-    qr=quiver(X,Y,-Y,X,0.8);
+    qr=quiver(X,Y,cao.spr.sc(2)-Y,X-cao.spr.sc(1),0.8);
     qr.Color="red";
     scale=qr.ScaleFactor;
     qw=quiver(X,Y,scale*dxvalues,scale*dyvalues,'off');
     qw.Color="blue";
+    fn=sprintf("rr_shear_stress_components_using_%s",model);
+    save_pdf(fig,fn);
+    fig=figure(327+mi);
+    hold off;
+    fp=sprintf("Shear stresses at corner using %s",model);
+    fig.Name=fp;
+    plot(ps);
+    axis equal;
+    hold on;
+    % rotation related values first as they are larger
+    qr=quiver(X,Y,cao.spr.sc(2)-Y+dxvalues,...
+        X-cao.spr.sc(1)+dyvalues,0.8);
+    qr.Color="red";
     fn=sprintf("rr_shear_stress_using_%s",model);
     save_pdf(fig,fn);
 end
