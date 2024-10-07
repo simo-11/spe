@@ -25,7 +25,9 @@ RECTANGLE='rectangle'
 CIRCULAR='circular'
 RHS='rhs'
 CHS='chs'
-PRIMITIVE_CHOICES=[RECTANGLE,CIRCULAR,RHS,CHS]
+BOX='box'
+BOX_GIRDER='box_girder'
+PRIMITIVE_CHOICES=[RECTANGLE,CIRCULAR,RHS,CHS,BOX,BOX_GIRDER]
 COLD_FORMED_U='cold-formed-u'
 consts.RHS=RHS
 consts.COLD_FORMED_U=COLD_FORMED_U
@@ -587,6 +589,8 @@ def add_common_arguments(parser):
     parser.add_argument("-H","--height", help="height",
                         default=1,type=float)
     parser.add_argument("-T","--thickness", help="thickness",
+                        default=0.004,type=float)
+    parser.add_argument("--web_thickness", help="web thickness",
                         default=0.004,type=float)
     parser.add_argument("-R","--radius", help="""outer radius,
     if < thickness, 2*thickness is used""",

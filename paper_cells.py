@@ -84,6 +84,42 @@ fn='gen/swxy.pdf'
 plt.savefig(fn)
 print(f'Wrote {fn}')
 plt.show()        
+# %% box_girder
+import matplotlib.pyplot as plt
+import numpy as np
+import time
+b=150
+h=150
+t=8
+d=t
+A=b*h-(b-2*d)*(h-2*t)
+print(f'A={1e-6*A:.3g}')
+xv=[]
+wv=[]
+w=b
+for h in np.geomspace(w,10*w,num=2):
+    ms=1e-6*h*w/100
+    runfile('primitive.py',#noqa
+      args=f"""-A -B -W={w/1000} -H={h/1000}
+      --thickness={t/1000} 
+      --web_thickness={t/1000}
+      --mesh_size={ms}
+      --primitive=box""")
+    xv.append(h/w)
+    nv=section.get_gamma()/section.get_area();
+    wv.append(nv)
+fig, ax = plt.subplots()
+#ax.set(xlim=(1,max(xv)),ylim=(0,1))
+#ax.set_title('')
+ax.set_xlabel(r'$h/w$')
+ax.set_ylabel(r'$I_{\omega}$')
+ax.plot(xv,wv,'k',label=r'$I_{\omega}$')
+legend = ax.legend(loc='lower center', shadow=True, fontsize='x-large')
+legend.get_frame().set_facecolor('C0')
+fn='gen/girder.pdf'
+plt.savefig(fn)
+print(f'Wrote {fn}')
+plt.show()        
 # %% U and SHS
 import matplotlib.pyplot as plt
 import time
@@ -103,7 +139,7 @@ for p in ("rhs",): # "rhs","u"
             w=50
             t=4
             ms=1e-5
-    for r in ("r",): # "s","r"
+    for r in ("s",): # "s","r"
         if r=="s":
             n_r_s=(0,)
         else:
@@ -295,4 +331,4 @@ for p in ("u",): # "rhs","u"
     fn=f'gen/{p}-n_r-gbtul-time.pdf'
     plt.savefig(fn)
     print(f'Wrote {fn}')
-    plt.show()        
+    plt.show()

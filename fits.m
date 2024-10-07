@@ -1,6 +1,6 @@
 %% set parameters and plot warping function based on analytical solution
 rect_width=0.1;
-rect_height=0.01;
+rect_height=0.1;
 if rect_height > rect_width
     error("rect_width must be => rect_height")
 end
@@ -29,8 +29,9 @@ da=daspect;
 daspect([da(2) da(2) da(3)]);
 %% create fits using increasing number of points
 models=["linearinterp" "cubicinterp" "poly44"...
-     "thinplateinterp"];
+     "biharmonicinterp"];
 % biharmonicinterp is similar as thinplateinterp
+% naturalinterp is quite similar is linearinterp
 line_specs=["--." "-o" "--x" "-^" "-v" ":o" ":x" "-."];
 random_counts=[10:10:100 100:30:400];
 edge_point_counts=5:2:9;% [12:3:30];

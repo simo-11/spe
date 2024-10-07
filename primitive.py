@@ -1,11 +1,13 @@
 r"""
 
-Primirive
+Primitive
 --------------
 
 Calculate section properties of
  * rectangle(default) based on width(W) and height(H)
  * circular based on diameter(D) and count(N)
+ * rhs based on width height and thickness
+ * box based on width height and web_thickness 
 Mesh is refined until relative change of torsion and warping constants
 is not more than rtol unless mesh_size is given
 """
@@ -57,6 +59,14 @@ thickness={1:.5g} and count={3}""".
         args.thickness,args.count)
     args.width=args.diameter
     args.height=args.diameter
+elif args.primitive==simo.dev.BOX:
+    args.title=(f"""{args.primitive}: height={args.height:.5g},
+width={args.width:.5g}
+thickness={args.thickness:.5g} 
+and web_thickness={args.web_thickness:.5g}""")
+    geometry = steel_sections.box_girder_section(args.height,
+        args.width,args.width,
+        args.thickness,args.thickness,args.web_thickness)
 if args.plot_geometry:
     geometry.plot_geometry()
 a=geometry.calculate_area()
