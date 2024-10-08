@@ -88,27 +88,55 @@ plt.show()
 import matplotlib.pyplot as plt
 import numpy as np
 import time
+import sympy
 b=150
-h=150
+h0=150
 t=8
 d=t
-A=b*h-(b-2*d)*(h-2*t)
+A=b*h0-(b-2*d)*(h0-2*t)
 print(f'A={1e-6*A:.3g}')
 xv=[]
 wv=[]
 w=b
-for h in np.geomspace(w,10*w,num=2):
+plot_geometry=True
+plot_geometry_to_file=False
+w_s=sympy.symbols('w')
+def getW(h):
+    sol=sympy.solve(A-w_s*h+(w_s-2*d)*(h-2*t),w_s)
+    return sol[0].evalf()
+for h in np.geomspace(10*d,40*d,num=3):
+    h=int(round(h,0))
+    w=getW(h)
     ms=1e-6*h*w/100
     runfile('primitive.py',#noqa
       args=f"""-A -B -W={w/1000} -H={h/1000}
       --thickness={t/1000} 
-      --web_thickness={t/1000}
+      --web_thickness={d/1000}
       --mesh_size={ms}
       --primitive=box""")
     xv.append(h/w)
     nv=section.get_gamma()/section.get_area();
     wv.append(nv)
-fig, ax = plt.subplots()
+    if plot_geometry:
+        if plot_geometry_to_file:
+            fn=section.gfn(f'box-{w}-{t}x{h}-{d}.pdf')
+            section.geometry.plot_geometry(
+                labels=()
+                ,title=f"{w}({t})x{h}({d}) mm"
+                ,cp=False
+                ,num='box-geometry'
+                ,legend=False
+                ,filename=fn)
+            print(f'Wrote {fn}')
+        else:
+            section.geometry.plot_geometry(
+                labels=()
+                ,title=f"{w}({t})x{h}({d}) mm"
+                ,cp=False
+                ,clear=True
+                ,num='box-geometry'
+                ,legend=False)        
+fig, ax = plt.subplots(num='xy')
 #ax.set(xlim=(1,max(xv)),ylim=(0,1))
 #ax.set_title('')
 ax.set_xlabel(r'$h/w$')
