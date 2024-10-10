@@ -91,63 +91,75 @@ import time
 import sympy
 b=150
 h0=150
-t=8
-d=t
-A=b*h0-(b-2*d)*(h0-2*t)
+t0=8
+d=t0
+A=b*h0-(b-2*d)*(h0-2*t0)
 print(f'A={1e-6*A:.3g}')
-xv=[]
-wv=[]
 w=b
-plot_geometry=True
+plot_geometry=False
 plot_geometry_to_file=False
 w_s=sympy.symbols('w')
-def getW(h):
-    sol=sympy.solve(A-w_s*h+(w_s-2*d)*(h-2*t),w_s)
-    return sol[0].evalf()
-for h in np.geomspace(10*d,40*d,num=3):
-    h=int(round(h,0))
-    w=getW(h)
-    ms=1e-6*h*w/100
-    runfile('primitive.py',#noqa
-      args=f"""-A -B -W={w/1000} -H={h/1000}
-      --thickness={t/1000} 
-      --web_thickness={d/1000}
-      --mesh_size={ms}
-      --primitive=box""")
-    xv.append(h/w)
-    nv=section.get_gamma()/section.get_area();
-    wv.append(nv)
-    if plot_geometry:
-        if plot_geometry_to_file:
-            fn=section.gfn(f'box-{w}-{t}x{h}-{d}.pdf')
-            section.geometry.plot_geometry(
-                labels=()
-                ,title=f"{w}({t})x{h}({d}) mm"
-                ,cp=False
-                ,num='box-geometry'
-                ,legend=False
-                ,filename=fn)
-            print(f'Wrote {fn}')
-        else:
-            section.geometry.plot_geometry(
-                labels=()
-                ,title=f"{w}({t})x{h}({d}) mm"
-                ,cp=False
-                ,clear=True
-                ,num='box-geometry'
-                ,legend=False)        
-fig, ax = plt.subplots(num='xy')
-#ax.set(xlim=(1,max(xv)),ylim=(0,1))
-#ax.set_title('')
-ax.set_xlabel(r'$h/w$')
-ax.set_ylabel(r'$I_{\omega}$')
-ax.plot(xv,wv,'k',label=r'$I_{\omega}$')
-legend = ax.legend(loc='lower center', shadow=True, fontsize='x-large')
-legend.get_frame().set_facecolor('C0')
-fn='gen/girder.pdf'
-plt.savefig(fn)
-print(f'Wrote {fn}')
-plt.show()        
+def save_plot(ax,pdf_name):
+    ax.legend(loc='upper right', shadow=True, fontsize='x-large')
+    fn=f'gen/{pdf_name}.pdf'
+    plt.savefig(fn)
+    print(f'Wrote {fn}')
+    plt.show()
+fig_iw, ax_iw = plt.subplots(num='Iw',clear=True)
+ax_iw.set_xlabel(r'$h/w$')
+ax_iw.set_ylabel(r'$I_{\omega}$')
+fig_it, ax_it = plt.subplots(num='It',clear=True)
+ax_it.set_xlabel(r'$h/w$')
+ax_it.set_ylabel(r'$I_t$')
+for t in np.linspace(0.2*t0,t0,num=5):
+    xv=[]
+    wv=[]
+    iv=[]
+    d_over_t=d/t
+    label=rf'$\frac{{d}}{{t}}={d_over_t:.2g}$'   
+    def getW(h):
+        sol=sympy.solve(A-w_s*h+(w_s-2*d)*(h-2*t),w_s)
+        return float(sol[0].evalf())
+    for h in np.linspace(h0,2*h0,num=20):
+        h=int(round(h,0))
+        w=round(getW(h),0)
+        if w<2*d:
+            print(f'loop ended as w={w:.3g} < 2d={2*d:.3g}')
+            break
+        ms=1e-6*h*w/100
+        runfile('primitive.py',#noqa
+          args=f"""-A -B -W={w/1000} -H={h/1000}
+          --thickness={t/1000} 
+          --web_thickness={d/1000}
+          --mesh_size={ms}
+          --primitive=box""")
+        xv.append(h/w)
+        wv.append(section.get_gamma())
+        iv.append(section.get_j())
+        if plot_geometry:
+            if plot_geometry_to_file:
+                fn=section.gfn(f'box-{w}-{t}x{h}-{d}.pdf')
+                section.geometry.plot_geometry(
+                    labels=()
+                    ,title=f"{w}({t})x{h}({d}) mm"
+                    ,cp=False
+                    ,num='box-geometry'
+                    ,legend=False
+                    ,filename=fn)
+                print(f'Wrote {fn}')
+            else:
+                section.geometry.plot_geometry(
+                    labels=()
+                    ,title=f"{w}({t})x{h}({d}) mm"
+                    ,cp=False
+                    ,clear=True
+                    ,num='box-geometry'
+                    ,legend=False)
+                plt.show()
+    ax_iw.plot(xv,wv,label=label)
+    ax_it.plot(xv,iv,label=label)
+save_plot(ax_iw,'girder_iw')
+save_plot(ax_it,'girder_it')
 # %% U and SHS
 import matplotlib.pyplot as plt
 import time

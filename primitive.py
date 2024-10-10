@@ -60,9 +60,9 @@ thickness={1:.5g} and count={3}""".
     args.width=args.diameter
     args.height=args.diameter
 elif args.primitive==simo.dev.BOX:
-    args.title=(f"""{args.primitive}: height={args.height:.5g},
+    args.title=(f"""{args.primitive}: height={args.height:.5g}, \
 width={args.width:.5g}
-thickness={args.thickness:.5g} 
+thickness={args.thickness:.5g} \
 and web_thickness={args.web_thickness:.5g}""")
     geometry = steel_sections.box_girder_section(args.height,
         args.width,args.width,
