@@ -111,7 +111,7 @@ ax_iw.set_ylabel(r'$I_{\omega}$')
 fig_it, ax_it = plt.subplots(num='It',clear=True)
 ax_it.set_xlabel(r'$h/w$')
 ax_it.set_ylabel(r'$I_t$')
-for t in np.linspace(0.2*t0,t0,num=5):
+for t in np.linspace(0.75*t0,1.5*t0,num=8):
     xv=[]
     wv=[]
     iv=[]
@@ -120,7 +120,7 @@ for t in np.linspace(0.2*t0,t0,num=5):
     def getW(h):
         sol=sympy.solve(A-w_s*h+(w_s-2*d)*(h-2*t),w_s)
         return float(sol[0].evalf())
-    for h in np.linspace(h0,2*h0,num=20):
+    for h in np.linspace(0.2*h0,1.35*h0,num=20):
         h=int(round(h,0))
         w=round(getW(h),0)
         if w<2*d:
