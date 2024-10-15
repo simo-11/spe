@@ -90,6 +90,8 @@ import numpy as np
 import time
 import sympy
 import concurrent.futures
+import sectionproperties.pre.library.steel_sections as steel_sections
+from sectionproperties.analysis.section import Section
 b=150
 h0=150
 t0=8
@@ -97,14 +99,13 @@ d=t0
 A=b*h0-(b-2*d)*(h0-2*t0)
 print(f'A={1e-6*A:.3g}')
 w=b
-plot_geometry=False
-plot_geometry_to_file=False
 plot_it=False
+x_ticks=20
 w_s=sympy.symbols('w')
-def save_plot(ax,pdf_name):
+def save_plot(fig,ax,pdf_name):
     ax.legend(loc='upper right', shadow=True, fontsize='x-large')
     fn=f'gen/{pdf_name}.pdf'
-    plt.savefig(fn)
+    fig.savefig(fn)
     print(f'Wrote {fn}')
     plt.show()
 fig_iw, ax_iw = plt.subplots(num='Iw',clear=True)
@@ -114,58 +115,50 @@ if plot_it:
     fig_it, ax_it = plt.subplots(num='It',clear=True)
     ax_it.set_xlabel(r'$h/w$')
     ax_it.set_ylabel(r'$I_t$')
+def run_solve(t,h,w,index):
+    geometry = steel_sections.box_girder_section(h/1000,
+        w/1000,w/1000,
+        t/1000,t/1000,d/1000)
+    ms=1e-6*h*w/100
+    geometry.create_mesh(mesh_sizes=[ms])
+    section=Section(geometry)
+    section.calculate_geometric_properties()
+    section.calculate_warping_properties()
+    return (t,h,w,index,section)
+print("d/t=", end="")
 with concurrent.futures.ThreadPoolExecutor() as executor:
     for t in np.linspace(0.75*t0,1.5*t0,num=8):
-        xv=[]
-        wv=[]
-        iv=[]
+        fs=[]
+        xv=np.zeros(x_ticks)
+        wv=np.zeros(x_ticks)
+        iv=np.zeros(x_ticks)
+        index=0
         d_over_t=d/t
-        label=rf'$\frac{{d}}{{t}}={d_over_t:.2g}$'   
+        label=rf'$\frac{{d}}{{t}}={d_over_t:.2g}$'
+        print(f"{d_over_t:.2g}", end=" ")
         def getW(h):
             sol=sympy.solve(A-w_s*h+(w_s-2*d)*(h-2*t),w_s)
             return float(sol[0].evalf())
-        for h in np.linspace(0.2*h0,1.35*h0,num=50):
+        for h in np.linspace(0.2*h0,1.35*h0,num=x_ticks):
             h=int(round(h,0))
             w=round(getW(h),0)
             if w<2*d:
                 print(f'loop ended as w={w:.3g} < 2d={2*d:.3g}')
                 break
-            ms=1e-6*h*w/100
-            runfile('primitive.py',#noqa
-              args=f"""-A -B -W={w/1000} -H={h/1000}
-              --thickness={t/1000} 
-              --web_thickness={d/1000}
-              --mesh_size={ms}
-              --primitive=box""")
-            xv.append(h/w)
-            wv.append(section.get_gamma())
-            iv.append(section.get_j())
-            if plot_geometry:
-                if plot_geometry_to_file:
-                    fn=section.gfn(f'box-{w}-{t}x{h}-{d}.pdf')
-                    section.geometry.plot_geometry(
-                        labels=()
-                        ,title=f"{w}({t})x{h}({d}) mm"
-                        ,cp=False
-                        ,num='box-geometry'
-                        ,legend=False
-                        ,filename=fn)
-                    print(f'Wrote {fn}')
-                else:
-                    section.geometry.plot_geometry(
-                        labels=()
-                        ,title=f"{w}({t})x{h}({d}) mm"
-                        ,cp=False
-                        ,clear=True
-                        ,num='box-geometry'
-                        ,legend=False)
-                    plt.show()
+            fs.append(executor.submit(run_solve,t,h,w,index))
+            index=index+1
+        for future in concurrent.futures.as_completed(fs):
+            (t,h,w,index,section)=future.result()
+            xv[index]=h/w
+            wv[index]=section.get_gamma()
+            iv[index]=section.get_j()
         ax_iw.plot(xv,wv,label=label)
         if plot_it:
             ax_it.plot(xv,iv,label=label)
-save_plot(ax_iw,'girder_iw')
+print()
+save_plot(fig_iw,ax_iw,'girder_iw')
 if plot_it:
-    save_plot(ax_it,'girder_it')
+    save_plot(fig_it,ax_it,'girder_it')
 # %% U and SHS
 import matplotlib.pyplot as plt
 import time

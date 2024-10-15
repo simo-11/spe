@@ -10,6 +10,8 @@ Calculate section properties of
  * box based on width height and web_thickness 
 Mesh is refined until relative change of torsion and warping constants
 is not more than rtol unless mesh_size is given
+
+As global variables are used, this is not suitable for multi thread usage
 """
 import math
 import argparse
