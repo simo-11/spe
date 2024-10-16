@@ -84,7 +84,7 @@ class DevSection(Section):
                 els.append(el)
         return els
 
-    def set_args(self,args,it_num):
+    def set_args(self,args,it_num=0):
         self.args=args
         if it_num==1:
             print(self.args.title)
@@ -159,6 +159,8 @@ class DevSection(Section):
                          (1000*self.args.height,1000*self.args.width))
         if self.uses_t():
             words.append("{0:g}".format(1000*self.args.thickness))
+        if self.uses_web_thickness():
+            words.append("{0:g}".format(1000*self.args.web_thickness))
         if self.uses_r():
             words.append("{0:g}".format(1000*self.args.radius))
         if self.uses_n_r():
@@ -170,8 +172,11 @@ class DevSection(Section):
     def uses_diameter(self):
         return self.args.primitive in (CIRCULAR,CHS)
 
+    def uses_web_thickness(self):
+        return self.args.primitive in (BOX)
+
     def uses_t(self):
-        return self.args.primitive in (RHS,CHS,COLD_FORMED_U)
+        return self.args.primitive in (RHS,CHS,COLD_FORMED_U,BOX)
 
     def uses_r(self):
         return self.args.primitive in (RHS,COLD_FORMED_U)

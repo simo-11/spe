@@ -91,7 +91,8 @@ import time
 import sympy
 import concurrent.futures
 import sectionproperties.pre.library.steel_sections as steel_sections
-from sectionproperties.analysis.section import Section
+import simo.dev
+import types
 b=150
 h0=150
 t0=8
@@ -104,10 +105,13 @@ x_ticks=20
 w_s=sympy.symbols('w')
 def save_plot(fig,ax,pdf_name):
     ax.legend(loc='upper right', shadow=True, fontsize='x-large')
+    fig.show()
     fn=f'gen/{pdf_name}.pdf'
-    fig.savefig(fn)
-    print(f'Wrote {fn}')
-    plt.show()
+    try:
+        fig.savefig(fn)
+        print(f'Wrote {fn}')
+    except PermissionError as e:
+        print(f'Write of {fn} failed due to {e}')
 fig_iw, ax_iw = plt.subplots(num='Iw',clear=True)
 ax_iw.set_xlabel(r'$h/w$')
 ax_iw.set_ylabel(r'$I_{\omega}$')
@@ -121,9 +125,20 @@ def run_solve(t,h,w,index):
         t/1000,t/1000,d/1000)
     ms=1e-6*h*w/100
     geometry.create_mesh(mesh_sizes=[ms])
-    section=Section(geometry)
+    section=simo.dev.DevSection(geometry)
+    args=types.SimpleNamespace()
+    args.primitive=simo.dev.BOX
+    args.width=round(w/1000,3)
+    args.height=round(h/1000,3)
+    args.thickness=round(t/1000,3)
+    args.web_thickness=round(d/1000,3)
+    args.gen='gen'
+    args.z_scale=0.5
+    section.set_args(args)
     section.calculate_geometric_properties()
     section.calculate_warping_properties()
+    section.write_json()
+    section.write_warping_gltf()
     return (t,h,w,index,section)
 print("d/t=", end="")
 with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -153,20 +168,28 @@ with concurrent.futures.ThreadPoolExecutor() as executor:
             wv[index]=section.get_gamma()
             iv[index]=section.get_j()
         ax_iw.plot(xv,wv,label=label)
+        fig_iw.show()
         if plot_it:
             ax_it.plot(xv,iv,label=label)
 print()
 save_plot(fig_iw,ax_iw,'girder_iw')
 if plot_it:
     save_plot(fig_it,ax_it,'girder_it')
-# %% U and SHS
+# %% U, SHS and RHS
 import matplotlib.pyplot as plt
 import time
-for p in ("rhs",): # "rhs","u"
+for p in ("rhs",): # "shs","u"
     match p:#noqa
         case "rhs":
             script="primitive"
-            primitive=f"--primitive {p}"
+            primitive="--primitive rhs"
+            h=150
+            w=h
+            t=8
+            ms=1e-4
+        case "shs":
+            script="primitive"
+            primitive="--primitive rhs"
             h=150
             w=h
             t=8
