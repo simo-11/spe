@@ -37,6 +37,7 @@ class DevSection(Section):
         self.triangles=None
         self.args=None
         self.gbtul=None
+        self.log_write=True
     """
     """
     def get_triangles(self):
@@ -184,6 +185,10 @@ class DevSection(Section):
     def uses_n_r(self):
         return self.args.primitive in (RHS,COLD_FORMED_U)
 
+    def wrote(self,name):
+        if self.log_write:
+            print(f"Wrote {name}")
+
     def write_json(self,fn=None):
         if fn==None:
             fn=self.default_filename(suffix='.json',use_case='results')
@@ -201,7 +206,7 @@ class DevSection(Section):
                 'z':self.get_z(),
             }
             print(json.dumps(data, indent=2), file=file)
-        print(f"Wrote {fn}")
+            self.wrote(f"{fn}")
 
     def write_warping_csv(self,fn=None):
         if fn==None:
@@ -217,7 +222,7 @@ class DevSection(Section):
             writer = csv.writer(csvfile)
             writer.writerow(['x','y','w'])
             writer.writerows(rows)
-        print("Wrote {0}".format(fn))
+        self.wrote("{0}".format(fn))
 
     def write_triangles_csv(self,fn=None):
         if fn==None:
@@ -227,7 +232,7 @@ class DevSection(Section):
             writer = csv.writer(csvfile)
             writer.writerow(['f','s','t'])
             writer.writerows(rows)
-        print("Wrote {0}".format(fn))
+        self.wrote("{0}".format(fn))
         
     def write_warping_gltf(self,fn=None):
         if fn==None:
@@ -381,7 +386,7 @@ class DevSection(Section):
         #
         gfn=self.gfn(fn)
         gltf.save(gfn)
-        print("Wrote {0}".format(fn))
+        self.wrote("{0}".format(fn))
 
     def write_warping_ply(self,fn=None):
         if fn==None:
@@ -405,7 +410,7 @@ class DevSection(Section):
         
         gfn=self.gfn(fn)
         PlyData([ply_nodes,ply_elements], text=False).write(gfn);
-        print("Wrote {0}".format(fn))
+        self.wrote("{0}".format(fn))
 
     def init_gbt_u(self):
         b=self.args.width

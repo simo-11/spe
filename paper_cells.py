@@ -101,10 +101,10 @@ A=b*h0-(b-2*d)*(h0-2*t0)
 print(f'A={1e-6*A:.3g}')
 w=b
 plot_it=False
+plot_geometry=False
 x_ticks=20
 w_s=sympy.symbols('w')
 def save_plot(fig,ax,pdf_name):
-    ax.legend(loc='upper right', shadow=True, fontsize='x-large')
     fig.show()
     fn=f'gen/{pdf_name}.pdf'
     try:
@@ -113,6 +113,7 @@ def save_plot(fig,ax,pdf_name):
     except PermissionError as e:
         print(f'Write of {fn} failed due to {e}')
 fig_iw, ax_iw = plt.subplots(num='Iw',clear=True)
+fig_g, ax_g = plt.subplots(num='Geometry',clear=True)
 ax_iw.set_xlabel(r'$h/w$')
 ax_iw.set_ylabel(r'$I_{\omega}$')
 if plot_it:
@@ -126,6 +127,7 @@ def run_solve(t,h,w,index):
     ms=1e-6*h*w/100
     geometry.create_mesh(mesh_sizes=[ms])
     section=simo.dev.DevSection(geometry)
+    section.log_write=False
     args=types.SimpleNamespace()
     args.primitive=simo.dev.BOX
     args.width=round(w/1000,3)
@@ -167,9 +169,18 @@ with concurrent.futures.ThreadPoolExecutor() as executor:
             xv[index]=h/w
             wv[index]=section.get_gamma()
             iv[index]=section.get_j()
+            if plot_geometry:
+                section.geometry.plot_geometry(num='Geometry',
+                labels=(),
+                cp=False,
+                legend=False,
+                title=f'{section.default_filename("","geometry")}',
+                clear=True)
+            ax_iw.legend(loc='upper right', shadow=True, fontsize='x-large')    
         ax_iw.plot(xv,wv,label=label)
         fig_iw.show()
         if plot_it:
+            ax_it.legend(loc='upper right', shadow=True, fontsize='x-large')    
             ax_it.plot(xv,iv,label=label)
 print()
 save_plot(fig_iw,ax_iw,'girder_iw')
