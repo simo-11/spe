@@ -42,7 +42,7 @@ class DevSection(Section):
     """
     def get_triangles(self):
         if not isinstance(self.triangles,np.ndarray):
-            ma=self._mesh_elements
+            ma=self.mesh_elements
             ne=len(ma)
             nt=4*ne
             ti=0
@@ -99,8 +99,8 @@ class DevSection(Section):
     def plot_warping_values(self,title=None,cmap=None):
         fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
         ax.set_box_aspect(self.get_box_aspect())
-        x=self._mesh_nodes[:,0]
-        y=self._mesh_nodes[:,1]
+        x=self.mesh_nodes[:,0]
+        y=self.mesh_nodes[:,1]
         z=self.section_props.omega
         triangles=self.get_triangles()
         if cmap==None:
@@ -123,8 +123,8 @@ class DevSection(Section):
     def contour_warping_values(self, title=None,levels=None,cmap=None):
         fig, ax = plt.subplots()
         self.set_box_aspect(ax)
-        x=self._mesh_nodes[:,0]
-        y=self._mesh_nodes[:,1]
+        x=self.mesh_nodes[:,0]
+        y=self.mesh_nodes[:,1]
         triangles=self.get_triangles()
         z=self.section_props.omega
         if cmap==None:
@@ -211,8 +211,8 @@ class DevSection(Section):
     def write_warping_csv(self,fn=None):
         if fn==None:
             fn=self.default_filename(suffix='.csv',use_case='warping')
-        x=self._mesh_nodes[:,0]
-        y=self._mesh_nodes[:,1]
+        x=self.mesh_nodes[:,0]
+        y=self.mesh_nodes[:,1]
         z=self.section_props.omega
         rows=np.empty([len(x),3],dtype=float)
         rows[:,0]=x
@@ -237,10 +237,10 @@ class DevSection(Section):
     def write_warping_gltf(self,fn=None):
         if fn==None:
             fn=self.default_filename(suffix='.glb',use_case='warping')
-        ps=len(self._mesh_nodes)
+        ps=len(self.mesh_nodes)
         points=np.empty((ps,3),dtype="float32")
-        points[:,0]=self._mesh_nodes[:,0]
-        points[:,1]=self._mesh_nodes[:,1]
+        points[:,0]=self.mesh_nodes[:,0]
+        points[:,1]=self.mesh_nodes[:,1]
         points[:,2]=self.section_props.omega
         triangles=self.get_triangles()
         triangles_binary_blob = triangles.flatten().tobytes()
@@ -392,9 +392,9 @@ class DevSection(Section):
         if fn==None:
             fn=self.default_filename(suffix='.ply',use_case='warping')
         scaler=0.4*self.get_box_aspect()[2]/max(self.section_props.omega)
-        ps=len(self._mesh_nodes)
-        data=[(self._mesh_nodes[i,0],
-               self._mesh_nodes[i,1],
+        ps=len(self.mesh_nodes)
+        data=[(self.mesh_nodes[i,0],
+               self.mesh_nodes[i,1],
                scaler*self.section_props.omega[i]) for i in range(ps)]
         points=np.array(data,dtype=[('x', 'f4'), ('y', 'f4'),
                             ('z', 'f4')])

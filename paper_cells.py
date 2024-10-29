@@ -11,7 +11,7 @@ run and also debug cells if needed.
 import matplotlib.pyplot as plt
 w=100
 for h in (100,80,60,30,10,2):
-    gPlotDone=False
+    gPlotDone=True
     for ec_in_h in (10,):
         ms=h/1000./10/(ec_in_h*ec_in_h)
         section=None
