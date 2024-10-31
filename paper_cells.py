@@ -10,36 +10,44 @@ run and also debug cells if needed.
 # %% rectangles
 import matplotlib.pyplot as plt
 w=100
-for h in (100,80,60,30,10,2):
-    gPlotDone=True
-    for ec_in_h in (10,):
+for h in (100,80,60):
+    gPlotDone=False
+    for ec_in_h in (5,10,20):
         ms=h/1000./10/(ec_in_h*ec_in_h)
         section=None
         runfile('primitive.py',#noqa
           args=f"""-A -W={w/1000} -H={h/1000}
           --mesh_size={ms}
           --primitive=rectangle""")
+        section.log_write=False
         if not gPlotDone:
-            pdf=plt.figure()
             fn=section.gfn(section.default_filename(".pdf","geometry"))
             section.geometry.plot_geometry(
                 labels=()
                 ,title=f"solid rectangle {w}x{h} mm"
+                ,num="geometry",clear=True
                 ,cp=False
                 ,legend=False
                 ,filename=fn)
-            print(f'Wrote {fn}')
+            if section.log_write:
+                print(f'Wrote {fn}')
             gPlotDone=True
-        (fig,ax)=section.contour_warping_values(levels=51,title='')
+        (fig,ax)=section.contour_warping_values(levels=51,title='',
+                num='contour',clear=True)
         fn=section.gfn(section.default_filename(".pdf","contour"))
         plt.savefig(fn)
-        print(f'Wrote {fn}')
-        plt.show();
-        (fig,ax)=section.plot_warping_values(title='')
+        if section.log_write:
+            print(f'Wrote {fn}')
+        plt.show()
+        plt.pause(0.1)
+        (fig,ax)=section.plot_warping_values(title='',
+                num='contour3d',clear=True)
         fn=section.gfn(section.default_filename(".pdf","3d"))
         plt.savefig(fn,bbox_inches='tight')
-        print(f'Wrote {fn}')
+        if section.log_write:
+            print(f'Wrote {fn}')
         plt.show();
+        plt.pause(0.1)
         section.write_json()
         section.write_warping_csv()
         section.write_triangles_csv()
@@ -69,7 +77,7 @@ for h in np.geomspace(w/40,w,num=25):
     av=aic*dc
     nv=section.get_j()
     iv.append(nv/av)    
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(num='xy',clear=True)
 ax.set(xlim=(1,max(xv)),ylim=(0,1))
 #ax.set_title('Ratio of actual and thin wall theoretical values')
 ax.set_xlabel(r'$l/t$')
@@ -98,7 +106,8 @@ h0=150
 t0=8
 d=t0
 A=b*h0-(b-2*d)*(h0-2*t0)
-print(f'A={1e-6*A:.3g}')
+# Keep A and d constant
+print(f'A={1e-6*A:.3g} d={1e-3*d:.1g}')
 w=b
 plot_it=False
 plot_geometry=False
@@ -113,7 +122,8 @@ def save_plot(fig,ax,pdf_name):
     except PermissionError as e:
         print(f'Write of {fn} failed due to {e}')
 fig_iw, ax_iw = plt.subplots(num='Iw',clear=True)
-fig_g, ax_g = plt.subplots(num='Geometry',clear=True)
+if plot_geometry:
+    fig_g, ax_g = plt.subplots(num='Geometry',clear=True)
 ax_iw.set_xlabel(r'$h/w$')
 ax_iw.set_ylabel(r'$I_{\omega}$')
 if plot_it:
@@ -143,6 +153,7 @@ def run_solve(t,h,w,index):
     section.write_warping_gltf()
     return (t,h,w,index,section)
 print("d/t=", end="")
+# waiting for better concurrency
 with concurrent.futures.ThreadPoolExecutor() as executor:
     for t in np.linspace(0.75*t0,1.5*t0,num=8):
         fs=[]
@@ -176,12 +187,15 @@ with concurrent.futures.ThreadPoolExecutor() as executor:
                 legend=False,
                 title=f'{section.default_filename("","geometry")}',
                 clear=True)
-            ax_iw.legend(loc='upper right', shadow=True, fontsize='x-large')    
+                plt.pause(0.1)
         ax_iw.plot(xv,wv,label=label)
+        ax_iw.legend(loc='upper right', shadow=True, fontsize='x-large')    
         fig_iw.show()
+        plt.pause(0.1)
         if plot_it:
-            ax_it.legend(loc='upper right', shadow=True, fontsize='x-large')    
             ax_it.plot(xv,iv,label=label)
+            ax_it.legend(loc='upper right', shadow=True, fontsize='x-large')    
+            plt.pause(0.1)    
 print()
 save_plot(fig_iw,ax_iw,'girder_iw')
 if plot_it:

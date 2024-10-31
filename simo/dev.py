@@ -96,8 +96,9 @@ class DevSection(Section):
         z=min(self.args.width,self.args.height)*self.args.z_scale
         return (self.args.width,self.args.height,z)
 
-    def plot_warping_values(self,title=None,cmap=None):
-        fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+    def plot_warping_values(self,title=None,cmap=None,
+                            **fig_kw:any):
+        fig, ax = plt.subplots(subplot_kw={"projection": "3d"},**fig_kw)
         ax.set_box_aspect(self.get_box_aspect())
         x=self.mesh_nodes[:,0]
         y=self.mesh_nodes[:,1]
@@ -120,8 +121,10 @@ class DevSection(Section):
                       ['','0',f'{zticks[2]:2.2}'])
         return (fig,ax)
 
-    def contour_warping_values(self, title=None,levels=None,cmap=None):
-        fig, ax = plt.subplots()
+    def contour_warping_values(self, title=None,
+                               levels=None,cmap=None,
+                               **fig_kw:any):
+        fig, ax = plt.subplots(**fig_kw)
         self.set_box_aspect(ax)
         x=self.mesh_nodes[:,0]
         y=self.mesh_nodes[:,1]
