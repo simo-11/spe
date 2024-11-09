@@ -86,7 +86,7 @@ c3=Dz2(L)==0;
 conds=[c1 c2 c3];
 sol(z)=dsolve(ode,conds);
 [ssol,k]=subexpr(sol,k);
-%% Distribution of rotation and derivates in z-direction
+%% Plot distribution of rotation and derivates in z-direction
 fp=sprintf("gen/results*.json");
 list=dir(fp);
 n=size(list,1);
@@ -95,15 +95,37 @@ for i=1:n
     prf=regexp(name,'results-(?<name>.*)-(?<nodes>\d+).json','names');
     fn=sprintf("%s/%s",list(i).folder,name);
     spr=jsondecode(fileread(fn));
-    % pick few good ones
-    if ~contains(name,["box-175-129",...
-            "cold-formed-u-100-50-4-8-12",...
-            "rectangle-100-100-1317",...
-            "rectangle-30-100-347",...
-            "rhs-150-150-8-16-8-1716"])
+    % pick good ones
+    if contains(name,"box-175-129")
+        key="rhs";
+    elseif contains(name,"cold-formed-u-100-50-4-8-12")
+        key="u";
+    elseif contains(name,"rectangle-100-100-1317")
+        key="r100";
+    elseif contains(name,"rectangle-30-100-347")
+        key="r30";
+    elseif contains(name,"rhs-150-150-8-16-8-1716")
+        key="shs";
+    else
         continue
     end
+    cmd=sprintf("%s.spr=spr",key);
+    eval(cmd);
+    cmd=sprintf("%s.prf=prf",key);
+    eval(cmd);
     k=sqrt(G*spr.j/(E*spr.gamma));
     fprintf("%s & %.3G & %.3G& %.3G%s\n",...
         prf.name,spr.gamma*1e12,spr.j*1e6,k,"\\");
 end
+x = linspace(0,L);
+fig=figure(313);
+theta_plot(x,)
+fig.Name="theta";
+save_pdf(fig,fig.Name);
+fig=figure(fig.Number+1);
+fig.Name="dtheta";
+save_pdf(fig,fig.Name);
+fig=figure(fig.Number+1);
+fig.Name="d2theta";
+save_pdf(fig,fig.Name);
+
