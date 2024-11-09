@@ -14,6 +14,9 @@ ao.rhs_cards=[50,100,200,400];
 ao.rsquareMin=0.9;
 ao.n="*";
 add_lib_to_path
+E=210e9;
+G=E/2.6;
+L=2;
 %% analytical square solid rectangle 100x100
 w=100;
 h=100;
@@ -72,3 +75,35 @@ rr24=testRHS(height=150,width=150,t=8,r=16,n_r=24,models=ao.rhs_models,...
 rr24{1}.ao.rr_card=150; % 
 rr24{1}.ao.rr_fl=0; % ~1.6 for paper, max 12.3
 latex_rr_report(rr24{1})
+%% differential equation for torsion 
+syms theta(z) git eiw T
+ode=git*diff(theta,z)-eiw*diff(theta,z,3)==T;
+Dz=diff(theta);
+Dz2=diff(theta,2);
+c1=theta(0)==0;
+c2=Dz(0)==0;
+c3=Dz2(L)==0;
+conds=[c1 c2 c3];
+sol(z)=dsolve(ode,conds);
+[ssol,k]=subexpr(sol,k);
+%% Distribution of rotation and derivates in z-direction
+fp=sprintf("gen/results*.json");
+list=dir(fp);
+n=size(list,1);
+for i=1:n
+    name=list(i).name;
+    prf=regexp(name,'results-(?<name>.*)-(?<nodes>\d+).json','names');
+    fn=sprintf("%s/%s",list(i).folder,name);
+    spr=jsondecode(fileread(fn));
+    % pick few good ones
+    if ~contains(name,["box-175-129",...
+            "cold-formed-u-100-50-4-8-12",...
+            "rectangle-100-100-1317",...
+            "rectangle-30-100-347",...
+            "rhs-150-150-8-16-8-1716"])
+        continue
+    end
+    k=sqrt(G*spr.j/(E*spr.gamma));
+    fprintf("%s & %.3G & %.3G& %.3G%s\n",...
+        prf.name,spr.gamma*1e12,spr.j*1e6,k,"\\");
+end
