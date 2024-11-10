@@ -100,15 +100,25 @@ for i=1:n
     spr=jsondecode(fileread(fn));
     % pick good ones
     if contains(name,"box-175-129")
-        key="rhs";
+        key="rhs-175-129-8-8";
+        o.line_marker='x';
+        o.line_style="--";
     elseif contains(name,"cold-formed-u-100-50-4-8-12")
-        key="u";
+        key="u-100-50-4";
+        o.line_style="-.";
+        o.line_marker='.';
     elseif contains(name,"rectangle-100-100-1317")
-        key="r100";
+        key="rectangle-100-100";
+        o.line_marker='square';
+        o.line_style="-";
     elseif contains(name,"rectangle-30-100-347")
-        key="r30";
+        key="rectangle-30-100";
+        o.line_marker='|';
+        o.line_style="-";
     elseif contains(name,"rhs-150-150-8-16-8-1716")
-        key="shs";
+        key="rhs-150-150-8";
+        o.line_marker='o';
+        o.line_style="--";
     else
         continue
     end
@@ -117,7 +127,7 @@ for i=1:n
     o.prf=prf;
     o.k=sqrt(G*spr.j/(E*spr.gamma));
     fprintf("%s & %.3G & %.3G& %.3G%s\n",...
-        prf.name,spr.gamma*1e12,spr.j*1e6,o.k,"\\");
+        o.key,spr.gamma*1e12,spr.j*1e6,o.k,"\\");
     ci=ci+1;
     c{ci}=o;
 end
@@ -142,22 +152,28 @@ function theta_plot(d_level,c,x,prf_count,L)
         key=c{i}.key;
         switch d_level
             case 0
-                y0=tanh(k*L)*(cosh(k*x)-1)-sinh(k*x)+k*x;
+                y0=(tanh(k*L)*(cosh(k*x)-1))-sinh(k*x)+k*x;
                 ytext='rotation/max rotation';
+                legend_location="northwest";
             case 1
                 y0=tanh(k*L)*sinh(k*x)-cosh(k*x)+1;
                 ytext='warping/max warping';
+                legend_location="southeast";
             case 2
                 y0=tanh(k*L)*cosh(k*x)-sinh(k*x);
                 ytext='bimoment/max bimoment';
+                legend_location="northeast";
             otherwise
-                error("d_level %d is not pupported",d_level)
+                error("d_level %d is not supported",d_level)
         end
         max_y=max(y0);
         y=y0./max_y;
-        plot(x,y,'DisplayName',key);
+        plot(x,y,'DisplayName',key,...
+            LineStyle=c{i}.line_style,...
+            MarkerIndices=i:7:length(y),...
+            Marker=c{i}.line_marker);
     end
-    legend(Location="southeast")
+    legend(Location=legend_location,FontSize=14)
     xlabel('z[m]');
     ylabel(ytext);
 end
