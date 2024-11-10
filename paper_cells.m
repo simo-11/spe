@@ -16,7 +16,7 @@ ao.n="*";
 add_lib_to_path
 E=210e9;
 G=E/2.6;
-L=2;
+L=0.5;
 %% analytical square solid rectangle 100x100
 w=100;
 h=100;
@@ -90,6 +90,9 @@ sol(z)=dsolve(ode,conds);
 fp=sprintf("gen/results*.json");
 list=dir(fp);
 n=size(list,1);
+prf_count=5;
+c=cell(prf_count,1);
+ci=0;
 for i=1:n
     name=list(i).name;
     prf=regexp(name,'results-(?<name>.*)-(?<nodes>\d+).json','names');
@@ -109,23 +112,53 @@ for i=1:n
     else
         continue
     end
-    cmd=sprintf("%s.spr=spr",key);
-    eval(cmd);
-    cmd=sprintf("%s.prf=prf",key);
-    eval(cmd);
-    k=sqrt(G*spr.j/(E*spr.gamma));
+    o.key=key;
+    o.spr=spr;
+    o.prf=prf;
+    o.k=sqrt(G*spr.j/(E*spr.gamma));
     fprintf("%s & %.3G & %.3G& %.3G%s\n",...
-        prf.name,spr.gamma*1e12,spr.j*1e6,k,"\\");
+        prf.name,spr.gamma*1e12,spr.j*1e6,o.k,"\\");
+    ci=ci+1;
+    c{ci}=o;
 end
 x = linspace(0,L);
 fig=figure(313);
-theta_plot(x,)
-fig.Name="theta";
+theta_plot(0,c,x,prf_count,L);
+fig.Name="rotation";
 save_pdf(fig,fig.Name);
 fig=figure(fig.Number+1);
-fig.Name="dtheta";
+theta_plot(1,c,x,prf_count,L);
+fig.Name="warping";
 save_pdf(fig,fig.Name);
 fig=figure(fig.Number+1);
-fig.Name="d2theta";
+theta_plot(2,c,x,prf_count,L);
+fig.Name="bimoment";
 save_pdf(fig,fig.Name);
+function theta_plot(d_level,c,x,prf_count,L)
+    clf;
+    hold on;
+    for i=1:prf_count
+        k=c{i}.k;
+        key=c{i}.key;
+        switch d_level
+            case 0
+                y0=tanh(k*L)*(cosh(k*x)-1)-sinh(k*x)+k*x;
+                ytext='rotation/max rotation';
+            case 1
+                y0=tanh(k*L)*sinh(k*x)-cosh(k*x)+1;
+                ytext='warping/max warping';
+            case 2
+                y0=tanh(k*L)*cosh(k*x)-sinh(k*x);
+                ytext='bimoment/max bimoment';
+            otherwise
+                error("d_level %d is not pupported",d_level)
+        end
+        max_y=max(y0);
+        y=y0./max_y;
+        plot(x,y,'DisplayName',key);
+    end
+    legend(Location="southeast")
+    xlabel('z[m]');
+    ylabel(ytext);
+end
 
