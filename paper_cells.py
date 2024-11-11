@@ -10,25 +10,27 @@ run and also debug cells if needed.
 # %% rectangles
 import matplotlib.pyplot as plt
 w=100
-for h in (100,80,60):
+for h in (10,): #100,80,60,10
     gPlotDone=False
-    for ec_in_h in (5,10,20):
+    for ec_in_h in (5,): #5,10,20
         ms=h/1000./10/(ec_in_h*ec_in_h)
         section=None
         runfile('primitive.py',#noqa
           args=f"""-A -W={w/1000} -H={h/1000}
           --mesh_size={ms}
           --primitive=rectangle""")
-        section.log_write=False
+        section.log_write=True
         if not gPlotDone:
             fn=section.gfn(section.default_filename(".pdf","geometry"))
-            section.geometry.plot_geometry(
+            ax=section.geometry.plot_geometry(
                 labels=()
                 ,title=f"solid rectangle {w}x{h} mm"
                 ,num="geometry",clear=True
                 ,cp=False
-                ,legend=False
-                ,filename=fn)
+                ,legend=False)
+            ax.set_xlabel("[m]")
+            ax.set_ylabel("[m]")
+            plt.savefig(fn)
             if section.log_write:
                 print(f'Wrote {fn}')
             gPlotDone=True
@@ -202,8 +204,8 @@ if plot_it:
     save_plot(fig_it,ax_it,'girder_it')
 # %% U, SHS and RHS
 import matplotlib.pyplot as plt
-import time
-for p in ("rhs",): # "shs","u"
+import time#noqa
+for p in ("shs",): # "shs","u","rhs"
     match p:#noqa
         case "rhs":
             script="primitive"
@@ -226,11 +228,14 @@ for p in ("rhs",): # "shs","u"
             w=50
             t=4
             ms=1e-5
-    for r in ("s",): # "s","r"
+        case _:
+            raise RuntimeError(f"""profile {p} is not supported.
+Check spelling or add support""")
+    for r in ("s","r"): # "s","r"
         if r=="s":
             n_r_s=(0,)
         else:
-            n_r_s=range(24,25,4)
+            n_r_s=range(8,9)
         for n_r in n_r_s:
             ts=time.time()        
             runfile(f'{script}.py',#noqa
@@ -238,26 +243,35 @@ for p in ("rhs",): # "shs","u"
               --mesh_size={ms}
               {primitive} --n_r={n_r}""")
             elapsed=time.time()-ts
+            section.log_write=True
             uc=section.default_filename("","solve")
             print(f'{uc} took {elapsed:.3f} seconds')
-            fn=section.gfn(section.default_filename(".pdf","geometry"))
-            section.geometry.plot_geometry(
+            fn=section.gfn(section.default_filename(".pdf","geometry"))        
+            ax=section.geometry.plot_geometry(num='Geometry',clear=True,
                 labels=()
                 ,title=f"{p}-{r} {w}x{h}x{t} mm"
                 ,cp=False
-                ,legend=False
-                ,filename=fn)
-            print(f'Wrote {fn}')
-            (fig,ax)=section.contour_warping_values(levels=51, title='')
+                ,legend=False)
+            ax.set_xlabel("[m]")
+            ax.set_ylabel("[m]")
+            plt.savefig(fn,bbox_inches='tight')
+            if section.log_write:
+                print(f'Wrote {fn}')
+            (fig,ax)=section.contour_warping_values(
+                num='countour_warping',clear=True,levels=51, title='')
             fn=section.gfn(section.default_filename(".pdf","contour"))
-            plt.savefig(fn)
-            print(f'Wrote {fn}')
+            plt.savefig(fn,bbox_inches='tight')
+            if section.log_write:
+                print(f'Wrote {fn}')
             plt.show();
-            (fig,ax)=section.plot_warping_values(title='')
+            (fig,ax)=section.plot_warping_values(
+                num='countour_warping',clear=True,title='')
             fn=section.gfn(section.default_filename(".pdf","3d"))
             plt.savefig(fn,bbox_inches='tight')
-            print(f'Wrote {fn}')
+            if section.log_write:
+                print(f'Wrote {fn}')
             plt.show();
+            plt.pause(0.1)
             section.write_json()
             section.write_warping_csv()
             section.write_triangles_csv()

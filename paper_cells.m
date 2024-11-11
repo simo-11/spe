@@ -152,15 +152,27 @@ function theta_plot(d_level,c,x,prf_count,L)
         key=c{i}.key;
         switch d_level
             case 0
-                y0=(tanh(k*L)*(cosh(k*x)-1))-sinh(k*x)+k*x;
+                if tanh(k*L)==1
+                    y0=exp(-k*x)-1+k*x;
+                else
+                    y0=(tanh(k*L)*(cosh(k*x)-1))-sinh(k*x)+k*x;
+                end
                 ytext='rotation/max rotation';
                 legend_location="northwest";
             case 1
-                y0=tanh(k*L)*sinh(k*x)-cosh(k*x)+1;
+                if tanh(k*L)==1
+                    y0=1-exp(-k*x);
+                else
+                    y0=tanh(k*L)*sinh(k*x)-cosh(k*x)+1;
+                end
                 ytext='warping/max warping';
                 legend_location="southeast";
             case 2
-                y0=tanh(k*L)*cosh(k*x)-sinh(k*x);
+                if tanh(k*L)==1
+                    y0=exp(-k*x);
+                else
+                    y0=tanh(k*L)*cosh(k*x)-sinh(k*x);
+                end
                 ytext='bimoment/max bimoment';
                 legend_location="northeast";
             otherwise
