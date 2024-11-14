@@ -122,6 +122,7 @@ class DevSection(Section):
         return (fig,ax)
 
     def contour_warping_values(self, title=None,
+                               label="Warping",
                                levels=None,cmap=None,
                                **fig_kw:any):
         fig, ax = plt.subplots(**fig_kw)
@@ -133,7 +134,7 @@ class DevSection(Section):
         if cmap==None:
             cmap=plt.cm.seismic
         trictr = ax.tricontourf(x, y, triangles, z,levels=levels,cmap=cmap)
-        fig.colorbar(trictr, label="Warping", format="%.4g")
+        fig.colorbar(trictr, label=label, format="%.4g")
         if title==None:
             title=('{2}\n{0} nodes, {1} elements'.format
             (self.num_nodes,len(self.elements),self.args.title))

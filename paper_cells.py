@@ -10,9 +10,9 @@ run and also debug cells if needed.
 # %% rectangles
 import matplotlib.pyplot as plt
 w=100
-for h in (10,): #100,80,60,10
+for h in (100,80,60,30,10): #100,80,60,30,10
     gPlotDone=False
-    for ec_in_h in (5,): #5,10,20
+    for ec_in_h in (10,): #5,10,20
         ms=h/1000./10/(ec_in_h*ec_in_h)
         section=None
         runfile('primitive.py',#noqa
@@ -28,24 +28,30 @@ for h in (10,): #100,80,60,10
                 ,num="geometry",clear=True
                 ,cp=False
                 ,legend=False)
-            ax.set_xlabel("[m]")
-            ax.set_ylabel("[m]")
+            ax.set_xlabel("x [m]")
+            ax.set_ylabel("y [m]")
             plt.savefig(fn)
             if section.log_write:
                 print(f'Wrote {fn}')
             gPlotDone=True
         (fig,ax)=section.contour_warping_values(levels=51,title='',
+                label='Warping [m$^2$]',
                 num='contour',clear=True)
         fn=section.gfn(section.default_filename(".pdf","contour"))
-        plt.savefig(fn)
+        ax.set_xlabel("x [m]")
+        ax.set_ylabel("y [m]")
+        plt.savefig(fn,bbox_inches='tight')
         if section.log_write:
             print(f'Wrote {fn}')
         plt.show()
         plt.pause(0.1)
         (fig,ax)=section.plot_warping_values(title='',
                 num='contour3d',clear=True)
+        ax.set_xlabel("\nx [m]",linespacing=2.6)
+        ax.set_ylabel("y [m]")
+        ax.set_zlabel("\nwarping [m$^2$]",linespacing=1.6)
         fn=section.gfn(section.default_filename(".pdf","3d"))
-        plt.savefig(fn,bbox_inches='tight')
+        plt.savefig(fn,bbox_inches='tight',pad_inches=0.3)
         if section.log_write:
             print(f'Wrote {fn}')
         plt.show();
@@ -205,7 +211,7 @@ if plot_it:
 # %% U, SHS and RHS
 import matplotlib.pyplot as plt
 import time#noqa
-for p in ("shs",): # "shs","u","rhs"
+for p in ("u",): # "shs","u","rhs"
     match p:#noqa
         case "rhs":
             script="primitive"
@@ -220,14 +226,14 @@ for p in ("shs",): # "shs","u","rhs"
             h=150
             w=h
             t=8
-            ms=1e-4
+            ms=1e-5 # 1e-4 -> 264/792, 1e-5 -> 1600/1716
         case "u":
             script="cold-formed-u"
             primitive=""
             h=100
             w=50
             t=4
-            ms=1e-5
+            ms=1e-5# 1e-5 -> 383/495
         case _:
             raise RuntimeError(f"""profile {p} is not supported.
 Check spelling or add support""")
@@ -252,22 +258,28 @@ Check spelling or add support""")
                 ,title=f"{p}-{r} {w}x{h}x{t} mm"
                 ,cp=False
                 ,legend=False)
-            ax.set_xlabel("[m]")
-            ax.set_ylabel("[m]")
+            ax.set_xlabel("x [m]")
+            ax.set_ylabel("y [m]")
             plt.savefig(fn,bbox_inches='tight')
             if section.log_write:
                 print(f'Wrote {fn}')
             (fig,ax)=section.contour_warping_values(
-                num='countour_warping',clear=True,levels=51, title='')
+                label='Warping [m$^2$]',
+                num='countour',clear=True,levels=51, title='')
             fn=section.gfn(section.default_filename(".pdf","contour"))
+            ax.set_xlabel("x [m]")
+            ax.set_ylabel("y [m]")
             plt.savefig(fn,bbox_inches='tight')
             if section.log_write:
                 print(f'Wrote {fn}')
             plt.show();
             (fig,ax)=section.plot_warping_values(
-                num='countour_warping',clear=True,title='')
+                num='countour3d',clear=True,title='')
             fn=section.gfn(section.default_filename(".pdf","3d"))
-            plt.savefig(fn,bbox_inches='tight')
+            ax.set_xlabel("\nx [m]",linespacing=1)
+            ax.set_ylabel("\ny [m]",linespacing=2.6)
+            ax.set_zlabel("\nwarping [m$^2$]",linespacing=1.6)
+            plt.savefig(fn,bbox_inches='tight',pad_inches=0.3)
             if section.log_write:
                 print(f'Wrote {fn}')
             plt.show();
