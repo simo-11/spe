@@ -107,7 +107,9 @@ for mi=1:ms
         qr.Color="red";
         scale=qr.ScaleFactor;
         qw=quiver(xvalues,yvalues,scale*dxvalues,scale*dyvalues,'off');
-        qw.Color="blue";        
+        qw.Color="blue";
+        xlabel("x[m]");
+        ylabel("y[m]");
     end
     fig=figure(317+mi);
     hold off;
@@ -124,6 +126,8 @@ for mi=1:ms
     qw=quiver(X,Y,scale*dxvalues,scale*dyvalues,'off');
     qw.Color="blue";
     fn=sprintf("rr_shear_stress_components_using_%s",model);
+    xlabel("x[m]");
+    ylabel("y[m]");
     save_pdf(fig,fn);
     fig=figure(327+mi);
     hold off;
@@ -136,6 +140,8 @@ for mi=1:ms
     qr=quiver(X,Y,cao.spr.sc(2)-Y+dxvalues,...
         X-cao.spr.sc(1)+dyvalues,0.8);
     qr.Color="red";
+    xlabel("x[m]");
+    ylabel("y[m]");
     fn=sprintf("rr_shear_stress_using_%s",model);
     save_pdf(fig,fn);
 end
