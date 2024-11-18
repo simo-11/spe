@@ -104,6 +104,7 @@ plt.show()
 import matplotlib.pyplot as plt
 import numpy as np
 import time
+import math
 import sympy
 import concurrent.futures
 import sectionproperties.pre.library.steel_sections as steel_sections
@@ -119,7 +120,8 @@ print(f'A={1e-6*A:.3g} d={1e-3*d:.1g}')
 w=b
 plot_it=False
 plot_geometry=False
-x_ticks=20
+print_each_point=True
+x_ticks=50
 w_s=sympy.symbols('w')
 def save_plot(fig,ax,pdf_name):
     fig.show()
@@ -130,10 +132,11 @@ def save_plot(fig,ax,pdf_name):
     except PermissionError as e:
         print(f'Write of {fn} failed due to {e}')
 fig_iw, ax_iw = plt.subplots(num='Iw',clear=True)
+ax_iw.set_yscale("log", base=10)
 if plot_geometry:
     fig_g, ax_g = plt.subplots(num='Geometry',clear=True)
 ax_iw.set_xlabel(r'$h/w$')
-ax_iw.set_ylabel(r'$I_{\omega}$')
+ax_iw.set_ylabel(r'$I_w [m^6]$')
 if plot_it:
     fig_it, ax_it = plt.subplots(num='It',clear=True)
     ax_it.set_xlabel(r'$h/w$')
@@ -160,7 +163,8 @@ def run_solve(t,h,w,index):
     section.write_json()
     section.write_warping_gltf()
     return (t,h,w,index,section)
-print("d/t=", end="")
+if not print_each_point:
+    print("d/t=", end="")
 # waiting for better concurrency
 with concurrent.futures.ThreadPoolExecutor() as executor:
     for t in np.linspace(0.75*t0,1.5*t0,num=8):
@@ -170,14 +174,28 @@ with concurrent.futures.ThreadPoolExecutor() as executor:
         iv=np.zeros(x_ticks)
         index=0
         d_over_t=d/t
-        label=rf'$\frac{{d}}{{t}}={d_over_t:.2g}$'
-        print(f"{d_over_t:.2g}", end=" ")
+        if d_over_t>0.95:
+            label=rf'$\frac{{d}}{{t}}={d_over_t:.3g}$'
+        else:
+            label=rf'$\frac{{d}}{{t}}={d_over_t:.2g}$'
+        h1=math.sqrt(d_over_t)*h0
+        dh=h1/x_ticks
+        if print_each_point:
+            print(f"\nd/t={d_over_t:.4g}, t={t:.4g}, h1={h1:.4g}, dh={dh:.4g}")
+        else:
+            print(f"{d_over_t:.4g}", end=" ")
+        hi=0    
         def getW(h):
             sol=sympy.solve(A-w_s*h+(w_s-2*d)*(h-2*t),w_s)
             return float(sol[0].evalf())
-        for h in np.linspace(0.2*h0,1.35*h0,num=x_ticks):
+        for h in np.concatenate(
+                (np.linspace(0.5*h1,h1,num=x_ticks//2),
+                 np.linspace(h1+dh,1.2*h1,num=x_ticks//2))):
+            hi=hi+1
             h=int(round(h,0))
             w=round(getW(h),0)
+            if print_each_point:
+                print(f"h={h}, w={w}, h/w={h/w:.4g}, hi={hi}")
             if w<2*d:
                 print(f'loop ended as w={w:.3g} < 2d={2*d:.3g}')
                 break
@@ -188,6 +206,8 @@ with concurrent.futures.ThreadPoolExecutor() as executor:
             xv[index]=h/w
             wv[index]=section.get_gamma()
             iv[index]=section.get_j()
+            if print_each_point:
+                print(f"Iw(t={t:.3g},h={h:.3g},w={w:.3g})={wv[index]:.3g}")
             if plot_geometry:
                 section.geometry.plot_geometry(num='Geometry',
                 labels=(),
