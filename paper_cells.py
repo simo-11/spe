@@ -7,6 +7,8 @@ run and also debug cells if needed.
 
 @author: simo nikula
 """
+# %% common config
+plot_stress_vector=True
 # %% rectangles
 import matplotlib.pyplot as plt
 w=100
@@ -21,7 +23,6 @@ for h in (100,80,60,30,10): #100,80,60,30,10
           --primitive=rectangle""")
         section.log_write=True
         if not gPlotDone:
-            fn=section.gfn(section.default_filename(".pdf","geometry"))
             ax=section.geometry.plot_geometry(
                 labels=()
                 ,title=f"solid rectangle {w}x{h} mm"
@@ -30,6 +31,7 @@ for h in (100,80,60,30,10): #100,80,60,30,10
                 ,legend=False)
             ax.set_xlabel("x [m]")
             ax.set_ylabel("y [m]")
+            fn=section.gfn(section.default_filename(".pdf","geometry"))
             plt.savefig(fn)
             if section.log_write:
                 print(f'Wrote {fn}')
@@ -55,6 +57,21 @@ for h in (100,80,60,30,10): #100,80,60,30,10
         if section.log_write:
             print(f'Wrote {fn}')
         plt.show();
+        if plot_stress_vector:
+            stress = section.calculate_stress(mzz=0.001)
+            sv_ax=stress.plot_stress_vector(stress="mzz_zxy", 
+                                      cmap="viridis",
+                                      fmt="{x:.3f}",
+                                      normalize=False,
+                                      num='stress_vector',
+                                      clear=True
+                                      )
+            sv_ax.set_xlabel("x [m]")
+            sv_ax.set_ylabel("y [m]")
+            fn=section.gfn(section.default_filename(".pdf","stress-vector"))
+            plt.savefig(fn,bbox_inches='tight')
+            if section.log_write:
+                print(f'Wrote {fn}')
         plt.pause(0.1)
         section.write_json()
         section.write_warping_csv()
@@ -231,7 +248,7 @@ if plot_it:
 # %% U, SHS and RHS
 import matplotlib.pyplot as plt
 import time#noqa
-for p in ("u",): # "shs","u","rhs"
+for p in ("u","shs","rhs"): # "shs","u","rhs"
     match p:#noqa
         case "rhs":
             script="primitive"
@@ -273,7 +290,7 @@ Check spelling or add support""")
             uc=section.default_filename("","solve")
             print(f'{uc} took {elapsed:.3f} seconds')
             fn=section.gfn(section.default_filename(".pdf","geometry"))        
-            ax=section.geometry.plot_geometry(num='Geometry',clear=True,
+            ax=section.geometry.plot_geometry(num='geometry',clear=True,
                 labels=()
                 ,title=f"{p}-{r} {w}x{h}x{t} mm"
                 ,cp=False
@@ -302,6 +319,22 @@ Check spelling or add support""")
             plt.savefig(fn,bbox_inches='tight',pad_inches=0.3)
             if section.log_write:
                 print(f'Wrote {fn}')
+            if plot_stress_vector:
+                stress = section.calculate_stress(mzz=0.001)
+                sv_ax=stress.plot_stress_vector(stress="mzz_zxy", 
+                                          cmap="viridis",
+                                          fmt="{x:.3f}",
+                                          normalize=False,
+                                          num='stress_vector',
+                                          clear=True
+                                          )
+                sv_ax.set_xlabel("x [m]")
+                sv_ax.set_ylabel("y [m]")
+                fn=section.gfn(
+                    section.default_filename(".pdf","stress-vector"))
+                plt.savefig(fn,bbox_inches='tight')
+                if section.log_write:
+                    print(f'Wrote {fn}')                
             plt.show();
             plt.pause(0.1)
             section.write_json()
