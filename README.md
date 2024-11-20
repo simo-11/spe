@@ -1,16 +1,53 @@
 # Introduction
 [Section-properties](https://github.com/robbievanleeuwen/section-properties) examples.
 
-## Dependencies
+# Installations
+
+## [Winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/]
+
+## UV
+```
+PS C:\> winget install -e --id astral-sh.uv
+```
+
+## Python
+```
+C:\> uv python install 3.12
+github\spe [main ≡]> uv venv
+Using CPython 3.12.7
+Creating virtual environment at: .venv
+Activate with: .venv\Scripts\activate
+github\spe [main ≡]> .venv\Scripts\activate
+```
+
+## [Spyder IDE](https://www.spyder-ide.org/)
+Istalling using winget
+```
+PS C:\> winget install -e --id Spyder.Spyder
+```
+Tools/Preferences/Python interpreter github/spe/.venv/Scripts/python.exe
+
+## Python packages
+
 Dependencies can be installed using pip
- * sectionproperties - needed for almost all examples
+ * spyder-kernels - needed for spyder integration
+ * sectionproperties - needed for almost all examples, numba makes it faster after initial run
  * pygltflib - needed for gltf export
  * plyfile - needed for ply export
+ * sympy - needed for  box_girder cell in paper_cells.py
 
-Typical command needed after update of python is
+Typical command needed after update of python is (uv in front if it is used)
 ```
-pip install spyder-kernels==2.5.* pygltflib sectionproperties plyfile
+pip install spyder-kernels==3.0.* pygltflib sectionproperties[numba] plyfile sympy
 ```
+
+## Matlab
+
+Recent version with following toolboxes is needed
+ * Curve Fitting Toolbox
+ * Statistics and Machine Learning Toolbox
+ * Symbolic Math Toolbox
+
 
 # Topics
 
@@ -30,7 +67,7 @@ See
 Samples in [primitive.py](primitive.py) and [cold-formed-u.py](cold-formed-u.py).
 
 Run using [sample-cells.py](sample-cells.py).
-In Spyder set working directory to section-properties\examples\11-simo and press CTRL-Enter on wanted cell.
+In Spyder set working directory to spe and press CTRL-Enter on wanted cell.
 
 
 Common parts in [dev.py](simo/dev.py)
