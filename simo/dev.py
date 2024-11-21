@@ -470,8 +470,8 @@ class DevSection(Section):
             e={'i':i,'j':j,'m':1,'inc':0,'t':t}
             self.gbt_elements.append(e)
 
-    def plot_gbt(self):
-        fig, ax = plt.subplots()
+    def plot_gbt(self,**fig_kw:any):
+        fig, ax = plt.subplots(**fig_kw)
         for f in self.gbt_elements:
             i_node=self.gbt_points[f['i']]
             j_node=self.gbt_points[f['j']]               

@@ -9,6 +9,7 @@ run and also debug cells if needed.
 """
 # %% common config
 plot_stress_vector=True
+plt_pause=0.5
 # %% rectangles
 import matplotlib.pyplot as plt
 w=100
@@ -46,7 +47,7 @@ for h in (100,80,60,30,10): #100,80,60,30,10
         if section.log_write:
             print(f'Wrote {fn}')
         plt.show()
-        plt.pause(0.1)
+        plt.pause(plt_pause)
         (fig,ax)=section.plot_warping_values(title='',
                 num='contour3d',clear=True)
         ax.set_xlabel("\nx [m]",linespacing=2.6)
@@ -72,7 +73,7 @@ for h in (100,80,60,30,10): #100,80,60,30,10
             plt.savefig(fn,bbox_inches='tight')
             if section.log_write:
                 print(f'Wrote {fn}')
-        plt.pause(0.1)
+        plt.pause(plt_pause)
         section.write_json()
         section.write_warping_csv()
         section.write_triangles_csv()
@@ -232,15 +233,15 @@ with concurrent.futures.ThreadPoolExecutor() as executor:
                 legend=False,
                 title=f'{section.default_filename("","geometry")}',
                 clear=True)
-                plt.pause(0.1)
+                plt.pause(plt_pause)
         ax_iw.plot(xv,wv,label=label)
         ax_iw.legend(loc='upper right', shadow=True, fontsize='x-large')    
         fig_iw.show()
-        plt.pause(0.1)
+        plt.pause(plt_pause)
         if plot_it:
             ax_it.plot(xv,iv,label=label)
             ax_it.legend(loc='upper right', shadow=True, fontsize='x-large')    
-            plt.pause(0.1)    
+            plt.pause(plt_pause)    
 print()
 save_plot(fig_iw,ax_iw,'girder_iw')
 if plot_it:
@@ -302,7 +303,7 @@ Check spelling or add support""")
                 print(f'Wrote {fn}')
             (fig,ax)=section.contour_warping_values(
                 label='Warping [m$^2$]',
-                num='countour',clear=True,levels=51, title='')
+                num='contour',clear=True,levels=51, title='')
             fn=section.gfn(section.default_filename(".pdf","contour"))
             ax.set_xlabel("x [m]")
             ax.set_ylabel("y [m]")
@@ -311,7 +312,7 @@ Check spelling or add support""")
                 print(f'Wrote {fn}')
             plt.show();
             (fig,ax)=section.plot_warping_values(
-                num='countour3d',clear=True,title='')
+                num='contour3d',clear=True,title='')
             fn=section.gfn(section.default_filename(".pdf","3d"))
             ax.set_xlabel("\nx [m]",linespacing=1)
             ax.set_ylabel("\ny [m]",linespacing=2.6)
@@ -336,7 +337,7 @@ Check spelling or add support""")
                 if section.log_write:
                     print(f'Wrote {fn}')                
             plt.show();
-            plt.pause(0.1)
+            plt.pause(plt_pause)
             section.write_json()
             section.write_warping_csv()
             section.write_triangles_csv()
@@ -377,7 +378,10 @@ for msi in range(mss):
         print(f'{uc} took {elapsed:.3f} seconds')
         section.plot_mesh(
             title=f'Mesh with mesh_size={msa[msi]} and n_r={n_r}',
-                          materials=False)
+                          materials=False
+                          ,num='mesh',clear=True)
+        plt.show()
+        plt.pause(plt_pause)
         nv=section.get_gamma()
         wv[msi,nri]=nv  
         st[msi,nri]=elapsed
@@ -392,10 +396,10 @@ for pic in range(2):
             axv=xv[:8]
         case 1:
             axv=xv[5:]
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(num='n_r/Iw',clear=True)
     ax.set_xticks(axv,axv)
     ax.set_xlabel(r'n_r')
-    ax.set_ylabel(r'$I_{\omega} [m^6]$')
+    ax.set_ylabel(r'$I_{w} [m^6]$')
     for msi in range(mss):
         ms=msa[msi]
         match pic:
@@ -407,9 +411,11 @@ for pic in range(2):
     legend = ax.legend(loc='lower center', shadow=True, fontsize='x-large')
     fn=f'gen/shs-n_r-iw-{pic}.pdf'
     plt.savefig(fn)
-    print(f'Wrote {fn}')
-    plt.show()        
-fig, ax = plt.subplots()
+    if section.log_write:
+        print(f'Wrote {fn}')
+    plt.show()
+    plt.pause(plt_pause)
+fig, ax = plt.subplots(num='solveTime',clear=True)
 #ax.set(xlim=(1,max(xv)),ylim=(0,max(st)))
 ax.set_xlabel(r'n_r')
 ax.set_ylabel(r'solve time [s]')
@@ -419,8 +425,10 @@ for msi in range(mss):
 legend = ax.legend(loc='upper left', shadow=True, fontsize='x-large')
 fn='gen/shs-n_r-time.pdf'
 plt.savefig(fn)
-print(f'Wrote {fn}')
-plt.show()        
+if section.log_write:
+    print(f'Wrote {fn}')
+plt.show()
+plt.pause(plt_pause)  
 # %% gbtul
 """
 Experiment on n_r option with GBTUL.
@@ -463,9 +471,10 @@ for p in ("u",): # "rhs","u"
         nv=section.gbtul.gamma
         wv[nri]=nv  
         st[nri]=elapsed
-        (fig,ax)=section.plot_gbt()
+        (fig,ax)=section.plot_gbt(num="geometry",clear=True)
         ax.set_title(label=f"Iw from GBTUL={nv:.3}")
         plt.show()
+        plt.pause(plt_pause)
         # for table {tab:shs-values-rounded}
         print(f'''GBTUL({n_r})\
  & {nv*1e12:.1f} \\(10^{{-12}}\\)\\\\''')
@@ -476,10 +485,10 @@ for p in ("u",): # "rhs","u"
                 axv=xv[:8]
             case 1:
                 axv=xv[5:]
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(num="n_r/Iw",clear=True)
         ax.set_xticks(axv,axv)
         ax.set_xlabel(r'n_r')
-        ax.set_ylabel(r'$I_{\omega} [m^6]$')
+        ax.set_ylabel(r'$I_{w} [m^6]$')
         match pic:
             case 0:
                 awv=wv[:8]
@@ -488,13 +497,17 @@ for p in ("u",): # "rhs","u"
         ax.plot(axv,awv)
         fn=f'gen/{p}-n_r-iw-gbtul-{pic}.pdf'
         plt.savefig(fn)
-        print(f'Wrote {fn}')
-        plt.show()        
-    fig, ax = plt.subplots()
+        if section.log_write:
+            print(f'Wrote {fn}')
+        plt.show()
+        plt.pause(plt_pause)        
+    fig, ax = plt.subplots(num="solveTime",clear=True)
     ax.set_xlabel(f'n_r for corner of {p}')
     ax.set_ylabel(r'solve time [s]')
     ax.plot(xv,st)
     fn=f'gen/{p}-n_r-gbtul-time.pdf'
     plt.savefig(fn)
-    print(f'Wrote {fn}')
+    if section.log_write:
+        print(f'Wrote {fn}')
     plt.show()
+    plt.pause(plt_pause)  
