@@ -46,7 +46,6 @@ for h in (100,80,60,30,10): #100,80,60,30,10
         plt.savefig(fn,bbox_inches='tight')
         if section.log_write:
             print(f'Wrote {fn}')
-        plt.show()
         plt.pause(plt_pause)
         (fig,ax)=section.plot_warping_values(title='',
                 num='contour3d',clear=True)
@@ -57,7 +56,7 @@ for h in (100,80,60,30,10): #100,80,60,30,10
         plt.savefig(fn,bbox_inches='tight',pad_inches=0.3)
         if section.log_write:
             print(f'Wrote {fn}')
-        plt.show();
+        plt.pause(plt_pause);
         if plot_stress_vector:
             stress = section.calculate_stress(mzz=0.001)
             sv_ax=stress.plot_stress_vector(stress="mzz_zxy", 
@@ -117,7 +116,7 @@ for i in (-1, -3):
 fn='gen/swxy.pdf'
 plt.savefig(fn)
 print(f'Wrote {fn}')
-plt.show()        
+plt.pause(plt_pause)        
 # %% box_girder
 import matplotlib.pyplot as plt
 import numpy as np
@@ -255,7 +254,7 @@ for p in ("u","shs","rhs"): # "shs","u","rhs"
             script="primitive"
             primitive="--primitive rhs"
             h=150
-            w=h
+            w=120
             t=8
             ms=1e-4
         case "shs":
@@ -310,7 +309,7 @@ Check spelling or add support""")
             plt.savefig(fn,bbox_inches='tight')
             if section.log_write:
                 print(f'Wrote {fn}')
-            plt.show();
+            plt.pause(plt_pause);
             (fig,ax)=section.plot_warping_values(
                 num='contour3d',clear=True,title='')
             fn=section.gfn(section.default_filename(".pdf","3d"))
@@ -336,7 +335,6 @@ Check spelling or add support""")
                 plt.savefig(fn,bbox_inches='tight')
                 if section.log_write:
                     print(f'Wrote {fn}')                
-            plt.show();
             plt.pause(plt_pause)
             section.write_json()
             section.write_warping_csv()
@@ -351,7 +349,8 @@ and mesh size.
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-import gc
+for num in ['geometry','contour','contour3d','stress_vector']:
+    plt.close(num)
 p="rhs"
 script="primitive"
 primitive=f"--primitive {p}"
@@ -367,7 +366,6 @@ st=np.zeros((mss,n_rs))
 for msi in range(mss):
     nri=0
     for n_r in xv:
-        gc.collect()
         ts=time.time()        
         runfile(f'{script}.py',#noqa
           args=f"""-A -W={w/1000} -H={h/1000} --thickness={t/1000}
@@ -380,7 +378,6 @@ for msi in range(mss):
             title=f'Mesh with mesh_size={msa[msi]} and n_r={n_r}',
                           materials=False
                           ,num='mesh',clear=True)
-        plt.show()
         plt.pause(plt_pause)
         nv=section.get_gamma()
         wv[msi,nri]=nv  
@@ -413,7 +410,6 @@ for pic in range(2):
     plt.savefig(fn)
     if section.log_write:
         print(f'Wrote {fn}')
-    plt.show()
     plt.pause(plt_pause)
 fig, ax = plt.subplots(num='solveTime',clear=True)
 #ax.set(xlim=(1,max(xv)),ylim=(0,max(st)))
@@ -427,7 +423,6 @@ fn='gen/shs-n_r-time.pdf'
 plt.savefig(fn)
 if section.log_write:
     print(f'Wrote {fn}')
-plt.show()
 plt.pause(plt_pause)  
 # %% gbtul
 """
@@ -436,7 +431,6 @@ Experiment on n_r option with GBTUL.
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-import gc
 for p in ("u",): # "rhs","u"
     match p:#noqa
         case "rhs":
@@ -458,7 +452,6 @@ for p in ("u",): # "rhs","u"
     st=np.zeros(n_rs)
     nri=0
     for n_r in xv:
-        gc.collect()
         ts=time.time()      
         runfile(f'{script}.py',#noqa
           args=f"""--gbtul -W={w/1000} -H={h/1000} --thickness={t/1000}
@@ -473,7 +466,6 @@ for p in ("u",): # "rhs","u"
         st[nri]=elapsed
         (fig,ax)=section.plot_gbt(num="geometry",clear=True)
         ax.set_title(label=f"Iw from GBTUL={nv:.3}")
-        plt.show()
         plt.pause(plt_pause)
         # for table {tab:shs-values-rounded}
         print(f'''GBTUL({n_r})\
@@ -499,7 +491,6 @@ for p in ("u",): # "rhs","u"
         plt.savefig(fn)
         if section.log_write:
             print(f'Wrote {fn}')
-        plt.show()
         plt.pause(plt_pause)        
     fig, ax = plt.subplots(num="solveTime",clear=True)
     ax.set_xlabel(f'n_r for corner of {p}')
@@ -509,5 +500,4 @@ for p in ("u",): # "rhs","u"
     plt.savefig(fn)
     if section.log_write:
         print(f'Wrote {fn}')
-    plt.show()
     plt.pause(plt_pause)  
