@@ -631,6 +631,9 @@ def check_arguments(parser,args):
         and not args.gbtul
         ):
         parser.print_help()
+    if(not os.path.exists(args.gen)):
+        os.makedirs(args.gen)
+        print(f"created directory {args.gen} for generated files")
 
 def run(args):
     return (args.run_analysis or args.mesh_size 
