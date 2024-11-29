@@ -520,7 +520,7 @@ class DevSection(Section):
         
     def run_gbtul(self):
         if not os.path.isfile(self.args.gbt):
-            raise Exception(f'GBT is not availeble at {self.args.gbt}')
+            raise Exception(f'GBT is not available at {self.args.gbt}')
         sp_args=[self.args.gbt,"1"]
         od=self.gfn("/Output_Files")
         if not os.path.isdir(od):
