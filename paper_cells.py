@@ -140,7 +140,7 @@ print(f'A={1e-6*A:.3g} d={1e-3*d:.1g}')
 w=b
 plot_it=False
 plot_geometry=False
-print_each_point=True
+print_each_point=False
 x_ticks=50
 w_s=sympy.symbols('w')
 def save_plot(fig,ax,pdf_name):
@@ -434,13 +434,27 @@ Experiment on n_r option with GBTUL.
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-for p in ("u",): # "rhs","u"
+import os.path
+for dir in (".","..","../.."):
+    gbt_path=dir+"/gbtul/GBT/GBT.exe"
+    if os.path.exists(gbt_path):
+        break
+if not os.path.exists(gbt_path):
+    raise Exception("GBT not found")
+for p in ("shs","u","rhs"): # "shs","u","rhs"
     match p:#noqa
-        case "rhs":
+        case "shs":
             script="primitive"
-            primitive=f"--primitive {p}"
+            primitive="--primitive rhs"
             h=150
             w=h
+            t=8
+            xv=list(range(1,5,1))
+        case "rhs":
+            script="primitive"
+            primitive="--primitive rhs"
+            h=150
+            w=120
             t=8
             xv=list(range(1,5,1))
         case "u":
@@ -458,6 +472,7 @@ for p in ("u",): # "rhs","u"
         ts=time.time()      
         runfile(f'{script}.py',#noqa
           args=f"""--gbtul -W={w/1000} -H={h/1000} --thickness={t/1000}
+          --gbt {gbt_path}
           {primitive} --n_r={n_r}""") 
         elapsed=time.time()-ts
         if not section.gbtul:
