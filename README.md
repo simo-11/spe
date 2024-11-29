@@ -80,6 +80,16 @@ IPdb [1]: c
 ```
 ### Notes on paper_cells.m
 
+#### U, SHS and RHS
+glb files should be checked e.g. 
+warping-rhs-150-150-8-16-8-1716.glb which has rounded corners
+![image](https://github.com/user-attachments/assets/1667d368-a632-4250-a311-2c5b27441ee6)
+
+and warping-rhs-150-150-8-0-0-1600.glb which has sharp corners
+![image](https://github.com/user-attachments/assets/c10f9db1-a303-4619-8fc3-33811f024929)
+are easier to understand if they rotated.
+
+
 #### gbtul
 Execution requires GBTUL to be available.
 Location of GBT.exe can be configured using --gbt option.
