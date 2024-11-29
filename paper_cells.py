@@ -10,6 +10,9 @@ run and also debug cells if needed.
 # %% common config
 plot_stress_vector=True
 plt_pause=0.5
+# %% close plot windows
+import matplotlib.pyplot as plt
+plt.close('all')
 # %% rectangles
 import matplotlib.pyplot as plt
 w=100
