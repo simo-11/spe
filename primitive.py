@@ -18,6 +18,7 @@ import argparse
 import sectionproperties.pre.library.primitive_sections as sections
 import sectionproperties.pre.library.steel_sections as steel_sections
 #from sectionproperties.analysis.section import Section
+import matplotlib.pyplot as plt
 import simo.dev
 parser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -118,7 +119,8 @@ while simo.dev.run(args):
         print(("It = {0:.3g}, Iw = {1:.3g}, k(steel) = {2:.2f}")
               .format(it,iw,math.sqrt(it/(2.6*iw))))
         if args.plot_warping_values:
-            section.plot_warping_values()
+            section.plot_warping_values(num='iterate',clear=True)
+            plt.pause(0.5)
         if args.write_warping_csv:
             section.write_warping_csv()
         if args.write_triangles_csv:

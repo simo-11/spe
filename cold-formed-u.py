@@ -169,6 +169,8 @@ while simo.dev.run(args):
         print("Shear center: ({0:.3g},{1:.3g})".format(*section.get_sc()))
         if args.plot_warping_values:
             section.plot_warping_values()
+            section.plot_warping_values(num='iterate',clear=True)
+            plt.pause(0.5)
         if args.write_warping_csv:
             section.write_warping_csv()
         if args.write_triangles_csv:
