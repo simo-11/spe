@@ -77,7 +77,7 @@ rr24=testRHS(height=150,width=150,t=8,r=16,n_r=24,models=ao.rhs_models,...
 rr24{1}.ao.rr_card=150; % 
 rr24{1}.ao.rr_fl=0; % 0 or ~1.6 for paper points_for_stress, max 12.3
 latex_rr_report(rr24{1})
-%% differential equation for torsion 
+%% non completed experiments differential equation for torsion 
 syms theta(z) git eiw T
 ode=git*diff(theta,z)-eiw*diff(theta,z,3)==T;
 Dz=diff(theta);
@@ -87,7 +87,7 @@ c2=Dz(0)==0;
 c3=Dz2(L)==0;
 conds=[c1 c2 c3];
 sol(z)=dsolve(ode,conds);
-[ssol,k]=subexpr(sol,k);
+[ssol,k]=subexpr(sol);
 %% Plot distribution of rotation and derivates in z-direction
 fp=sprintf("gen/results*.json");
 list=dir(fp);
@@ -137,15 +137,15 @@ x = linspace(0,L);
 fig=figure(313);
 theta_plot(0,c,x,prf_count,L);
 fig.Name="rotation";
-save_pdf(fig,fig.Name);
+save_pdf_and_fig(fig,fig.Name);
 fig=figure(fig.Number+1);
 theta_plot(1,c,x,prf_count,L);
 fig.Name="warping";
-save_pdf(fig,fig.Name);
+save_pdf_and_fig(fig,fig.Name);
 fig=figure(fig.Number+1);
 theta_plot(2,c,x,prf_count,L);
 fig.Name="bimoment";
-save_pdf(fig,fig.Name);
+save_pdf_and_fig(fig,fig.Name);
 function theta_plot(d_level,c,x,prf_count,L)
     clf;
     hold on;

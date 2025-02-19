@@ -128,7 +128,7 @@ for mi=1:ms
     fn=sprintf("rr_shear_stress_components_using_%s",model);
     xlabel("x[m]");
     ylabel("y[m]");
-    save_pdf(fig,fn);
+    save_pdf_and_fig(fig,fn);
     fig=figure(327+mi);
     hold off;
     fp=sprintf("Shear stresses at corner using %s",model);
@@ -143,8 +143,8 @@ for mi=1:ms
     xlabel("x[m]");
     ylabel("y[m]");
     fn=sprintf("rr_shear_stress_using_%s",model);
-    save_pdf(fig,fn);
+    save_pdf_and_fig(fig,fn);
 end
 fprintf("Wrote %s\n",tlfn);
 fclose(tlFileID);
-save_pdf(pfig,"points_for_stress");
+save_pdf_and_fig(pfig,"points_for_stress");

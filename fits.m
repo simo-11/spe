@@ -140,18 +140,9 @@ for ei=1:edge_size
         xscale('linear');
         legend(active_models(:));
         if ri==random_size && save_xy_plot
-            h=fig;
-            set(h,'Units','Inches','PaperPositionMode','Auto',...
-                'PaperUnits','Inches');
-            % After modifying size of figure and 
-            % at least once before printing
-            pos = get(h,'Position');
-            set(h, 'PaperSize',[pos(3), pos(4)])
-            % Save to pdf using screen resolution
-            pdf_name=sprintf("gen/Iw_error-%G-%G-%d.pdf",...
+            filename=sprintf("Iw_error-%G-%G-%d",...
                 rect_width*1000,rect_height*1000,edge_point_count);
-            print(h,pdf_name,'-dpdf','-r0');
-            fprintf("Saved %s\n",pdf_name);
+            save_pdf_and_fig(fig,filename);
         end
         pause(0.1);
     end
