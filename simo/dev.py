@@ -407,7 +407,7 @@ class DevSection(Section):
                face[i,1],
                face[i,2]],)) for i in range(len(face))]
         # use int as e.g. gigamesh reader does not support shorts
-        faces=np.array(face_data,dtype=[('vertex_indices', 'int', (3,))])
+        faces=np.array(face_data,dtype=[('vertex_indices', 'int32', (3,))])
         ply_nodes = PlyElement.describe(points, 'vertex')
         ply_elements = PlyElement.describe(faces,'face',
                                  comments=['simo.dev.write_warping_ply'])
