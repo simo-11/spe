@@ -4,7 +4,7 @@
 @author: simo nikula
 """
 # %% common config
-plot_stress_vector=True
+plot_stress_vector=False
 plt_pause=0.5
 # %% close plot windows
 import matplotlib.pyplot as plt
@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 w=3.2024
 h=12.377
 gPlotDone=False
-for ec_in_h in (4,10,100,200): #4,10,100,200
+for ec_in_h in (10,20,30,50,100): #4,10,100,200
     ms=h/1000./10/(ec_in_h*ec_in_h)
     section=None
     runfile('primitive.py',#noqa
