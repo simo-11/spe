@@ -5,9 +5,6 @@ arguments
     ao.debugLevel=0
     ao.n=3
 end
-if ao.width<ao.height
-    error("width must be >= height")
-end
 a=ao.width/2;
 b=ao.height/2;
 x0=0;
