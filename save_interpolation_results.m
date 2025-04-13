@@ -29,7 +29,8 @@ aw is w from analytical solution
     end
     error_percent=round(100*error_estimate_source,2);
     max_error_percent=max(abs(error_percent));
-    T=table(x,y,w,x0,y0,aw,error_percent);
+    %T=table(x,y,w,x0,y0,aw,error_percent);% for debugging
+    T=table(x,y,w);
     writetable(T,full_name);
     fprintf("Saved %s, max error percent=%.2g\n",...
         full_name,max_error_percent);
