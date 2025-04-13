@@ -19,15 +19,18 @@ aw is w from analytical solution
     y=y0-height/2;
     awf=@(x,y)rect_psi(x,y,0,0,6,width/2,height/2);
     aw=awf(x,y);
-    error_estimate_a=(w+aw)./w;
-    error_estimate_b=(w-aw)./w;
-    if sum(error_estimate_a)>sum(error_estimate_b)
-        error_percent=error_estimate_b;
+    max_aw=max(abs(aw));
+    error_estimate_a=(w+aw)/max_aw;
+    error_estimate_b=(w-aw)/max_aw;
+    if sum(abs(error_estimate_a))>sum(abs(error_estimate_b))
+        error_estimate_source=error_estimate_b;
     else
-        error_percent=error_estimate_a;
+        error_estimate_source=error_estimate_a;
     end
-    error_percent=round(100*error_percent,2);
+    error_percent=round(100*error_estimate_source,2);
+    max_error_percent=max(abs(error_percent));
     T=table(x,y,w,x0,y0,aw,error_percent);
     writetable(T,full_name);
-    fprintf("Saved %s\n",full_name);
+    fprintf("Saved %s, max error percent=%.2g\n",...
+        full_name,max_error_percent);
 end
