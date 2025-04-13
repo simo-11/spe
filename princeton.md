@@ -27,5 +27,48 @@ Iw=3.29E-16 (n=1) took 0.2419 ms
 Iw=3.33E-16 (n=0) took 0.1278 ms
 ```
 
+# interpolate based on section properties results
+```
+file=warping-rectangle-12.377-3.2024-24.csv
+model=cubicinterp-integral2, Iw=3.39e-16, cub took 1.56 ms
+model=linearinterp-integral2, Iw=3.33e-16, cub took 0.718 ms
+file=warping-rectangle-12.377-3.2024-57.csv
+model=cubicinterp-integral2, Iw=3.33e-16, cub took 1.88 ms
+model=linearinterp-integral2, Iw=3.3e-16, cub took 0.74 ms
+file=warping-rectangle-12.377-3.2024-114.csv
+model=cubicinterp-integral2, Iw=3.28e-16, cub took 2.24 ms
+model=linearinterp-integral2, Iw=3.28e-16, cub took 0.944 ms
+file=warping-rectangle-12.377-3.2024-294.csv
+model=cubicinterp-integral2, Iw=3.28e-16, cub took 4.46 ms
+model=linearinterp-integral2, Iw=3.27e-16, cub took 1.32 ms
+file=warping-rectangle-12.377-3.2024-1060.csv
+model=cubicinterp-integral2, Iw=3.28e-16, cub took 9.77 ms
+model=linearinterp-integral2, Iw=3.28e-16, cub took 1.12 ms
+```
 
-# Results from interpolation
+# write warping results based on interpolation f
+uses [save_interpolation_results.m](./save_interpolation_results.m)
+```
+aved gen/cubicinterp-12.377-3.2024-24-10x10.xlsx, max error percent=9.6
+Saved gen/cubicinterp-12.377-3.2024-24-100x100.xlsx, max error percent=9.3
+Saved gen/linearinterp-12.377-3.2024-24-10x10.xlsx, max error percent=8.7
+Saved gen/linearinterp-12.377-3.2024-24-100x100.xlsx, max error percent=8.4
+Saved gen/cubicinterp-12.377-3.2024-57-10x10.xlsx, max error percent=5.3
+Saved gen/cubicinterp-12.377-3.2024-57-100x100.xlsx, max error percent=5.6
+Saved gen/linearinterp-12.377-3.2024-57-10x10.xlsx, max error percent=5.4
+Saved gen/linearinterp-12.377-3.2024-57-100x100.xlsx, max error percent=6.5
+Saved gen/cubicinterp-12.377-3.2024-114-10x10.xlsx, max error percent=2.3
+Saved gen/cubicinterp-12.377-3.2024-114-100x100.xlsx, max error percent=2.4
+Saved gen/linearinterp-12.377-3.2024-114-10x10.xlsx, max error percent=2.8
+Saved gen/linearinterp-12.377-3.2024-114-100x100.xlsx, max error percent=3.2
+Saved gen/cubicinterp-12.377-3.2024-294-10x10.xlsx, max error percent=1.2
+Saved gen/cubicinterp-12.377-3.2024-294-100x100.xlsx, max error percent=1.5
+Saved gen/linearinterp-12.377-3.2024-294-10x10.xlsx, max error percent=1.2
+Saved gen/linearinterp-12.377-3.2024-294-100x100.xlsx, max error percent=2.2
+Saved gen/cubicinterp-12.377-3.2024-1060-10x10.xlsx, max error percent=0.73
+Saved gen/cubicinterp-12.377-3.2024-1060-100x100.xlsx, max error percent=0.72
+Saved gen/linearinterp-12.377-3.2024-1060-10x10.xlsx, max error percent=0.73
+Saved gen/linearinterp-12.377-3.2024-1060-100x100.xlsx, max error percent=0.73
+```
+
+
