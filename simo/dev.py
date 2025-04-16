@@ -205,7 +205,7 @@ class DevSection(Section):
                 'ig':self.get_ig(),
                 'ip':self.get_ip(),
                 'j':self.get_j(),
-                'q':self.get_j(),
+                'q':self.get_q(),
                 'sc':self.get_sc(),
                 'z':self.get_z(),
             }
