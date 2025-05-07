@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-
+sharp corner RHS as box and by subtraction
 @author: simo nikula
 """
 # %% common config
@@ -18,7 +18,7 @@ write_table_line=True
 log_parts=True
 # %% close plot windows
 plt.close('all')
-# %% sharp corner RHS as box and by subtraction
+# %% configure 
 import matplotlib.pyplot as plt
 W=160
 H=80
@@ -30,6 +30,10 @@ t_ft=T/1000
 t_fb=T/1000
 t_w=T/1000
 gPlotDone=False
+br_A=(W-T)/1000*(H-T)/1000
+br_j=4*np.pow(br_A,2)/((2*(W-T)+2*(H-T))/T)
+print(f"J from Bredt's formula {1e6*br_j:.5g} e-6")
+# %% various ways
 if not do_plots:
     plt.close('all')
 for ec_in_h in (4,10,14,15,30,35,40): #
