@@ -10,7 +10,7 @@ ao.cards=[50,100,400,500];
 ao.rsquareMin=0.9;
 ao.n=["24","57","114","294","1060"];%number of nodes in section properties model
 %ao.n="375";
-ao.oms=[10,100];% output mesh size, number of points in each direction
+ao.oms=[4,10,100];% output mesh size, number of points in each direction
 add_lib_to_path
 E=71.7e9;
 nu=0.31;
