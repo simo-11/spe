@@ -13,10 +13,11 @@ import sectionproperties.pre.library.primitive_sections as primitive_sections
 do_plots=False
 plot_stress_vector=False
 plt_pause=0.5
-write_files=False
+write_files=True
 write_table_line=True
 log_parts=True
-E=210e9
+#E=210e9#
+E=1e9#Something soft, e.g. some plastic
 nu=0.3
 G=E/(2*(1+nu))
 def kc(It,Iw):
@@ -57,14 +58,25 @@ for ec_in_h in (4,10,14,15,30,35,40): #
     ms=np.pow(d/ec_in_h,2)
     ga=[geometry,ob_geometry,ib_geometry]
     sa=[]
-    for go in ga:
+    for i in range(len(ga)):
+        go=ga[i];
         go.create_mesh(mesh_sizes=[ms])
         section=simo.dev.DevSection(go)
-        section.log_write=False
+        section.log_write=True
         args=types.SimpleNamespace()
-        args.primitive=simo.dev.BOX
-        args.width=b_t
-        args.height=d
+        match i:
+            case 0:
+                args.primitive=simo.dev.BOX
+                args.width=b_t
+                args.height=d
+            case 1:
+                args.primitive=simo.dev.RECTANGLE
+                args.width=b_t
+                args.height=d
+            case 2:
+                args.primitive=simo.dev.RECTANGLE
+                args.width=b_t-2*t_w
+                args.height=d-t_ft-t_fb
         args.thickness=t_ft
         args.web_thickness=t_w
         args.gen='gen'
@@ -137,4 +149,4 @@ It=sa[0].get_j()
 Iw=sa[0].get_gamma()
 k=kc(It,Iw)
 theta_v=theta(T,It,Iw,L,L)
-print(f"kL={k*L:.3g}, theta={theta_v:.3g} rad/{theta_v*180/np.pi:.3g}°")
+print(f"kL={k*L:.3g}, theta={theta_v:.4g} rad/{theta_v*180/np.pi:.4g}°")
