@@ -16,10 +16,22 @@ plt_pause=0.5
 write_files=False
 write_table_line=True
 log_parts=True
+E=210e9
+nu=0.3
+G=E/(2*(1+nu))
+def kc(It,Iw):
+    return np.sqrt((G*It)/(E*Iw))
+def theta(T,It,Iw,L,x):
+    k=kc(It,Iw)
+    c0=T/(k*G*It)
+    if np.tanh(k*L)==1:
+        y=c0*(np.exp(-k*x)-1+k*x)
+    else:
+        y=c0*((np.tanh(k*L)*(np.cosh(k*x)-1))-np.sinh(k*x)+k*x)
+    return y
 # %% close plot windows
 plt.close('all')
 # %% configure 
-import matplotlib.pyplot as plt
 W=160
 H=80
 T=10
@@ -118,3 +130,11 @@ for ec_in_h in (4,10,14,15,30,35,40): #
           1e6*sa[1].get_j(),
           1e9*sa[2].get_gamma(),
           1e6*sa[2].get_j()))
+# %% selected results
+L=2
+T=1e3
+It=sa[0].get_j()
+Iw=sa[0].get_gamma()
+k=kc(It,Iw)
+theta_v=theta(T,It,Iw,L,L)
+print(f"kL={k*L:.3g}, theta={theta_v:.3g} rad/{theta_v*180/np.pi:.3g}°")
