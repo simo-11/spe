@@ -13,7 +13,7 @@ import sectionproperties.pre.library.primitive_sections as primitive_sections
 do_plots=False
 plot_stress_vector=False
 plt_pause=0.5
-write_files=True
+write_files=False
 write_table_line=True
 log_parts=True
 #E=210e9#
