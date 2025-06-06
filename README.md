@@ -18,9 +18,9 @@ PS C:\> winget install -e --id astral-sh.uv
 
 ## Python
 ```
-C:\> uv python install 3.12
+C:\> uv python install 3.13.4
 github\spe [main ≡]> uv venv
-Using CPython 3.12.9
+Using CPython 3.13.4
 Creating virtual environment at: .venv
 Activate with: .venv\Scripts\activate
 github\spe [main ≡]> .venv\Scripts\activate
@@ -74,8 +74,8 @@ and run by pressing <img src="https://github.com/user-attachments/assets/19e3f97
     * Modify parameters and rerun
  * You can also use IPython Console to control execution. Use !h to get help on commands while debugging i.e. on IPdb promt.
 ```
-In [1]: %runcell -n 'common config' C:/Users/simon/spe/paper_cells.py
-In [2]: %debugcell -n rectangles C:/Users/simon/spe/paper_cells.py
+In [1]: %runcell -n 'common config' paper_cells.py
+In [2]: %debugcell -n rectangles paper_cells.py
 IPdb [1]: c
 ```
 ### Notes on paper_cells.m
