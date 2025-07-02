@@ -16,7 +16,7 @@ plt.close('all')
 # %% rectangles
 import matplotlib.pyplot as plt
 w=100
-for h in (100,80,60,30,10): #100,80,60,30,10
+for h in (10,100): #100,80,60,30,10
     gPlotDone=False
     for ec_in_h in (10,): #5,10,20
         ms=h/1000./10/(ec_in_h*ec_in_h)
@@ -54,7 +54,9 @@ for h in (100,80,60,30,10): #100,80,60,30,10
                 num='contour3d',clear=True)
         ax.set_xlabel("\nx [m]",linespacing=2.6)
         ax.set_ylabel("y [m]")
-        ax.set_zlabel("\nwarping [m$^2$]",linespacing=1.6)
+        ax.tick_params('z',pad=6.0)
+        ax.set_zlabel("\nwarping [m$^2$]",
+                      linespacing=1.6)
         fn=section.gfn(section.default_filename(".pdf","3d"))
         plt.savefig(fn,bbox_inches='tight',pad_inches=0.3)
         if section.log_write:
@@ -251,7 +253,7 @@ if plot_it:
 # %% U, SHS and RHS
 import matplotlib.pyplot as plt
 import time#noqa
-for p in ("u","shs","rhs"): # "shs","u","rhs"
+for p in ("shs",): # "shs","u","rhs"
     match p:#noqa
         case "rhs":
             script="primitive"
@@ -277,7 +279,7 @@ for p in ("u","shs","rhs"): # "shs","u","rhs"
         case _:
             raise RuntimeError(f"""profile {p} is not supported.
 Check spelling or add support""")
-    for r in ("s","r"): # "s","r"
+    for r in ("r",): # "s","r"
         if r=="s":
             n_r_s=(0,)
         else:
@@ -318,6 +320,7 @@ Check spelling or add support""")
             fn=section.gfn(section.default_filename(".pdf","3d"))
             ax.set_xlabel("\nx [m]",linespacing=1)
             ax.set_ylabel("\ny [m]",linespacing=2.6)
+            ax.tick_params('z',pad=6.0)
             ax.set_zlabel("\nwarping [m$^2$]",linespacing=1.6)
             plt.savefig(fn,bbox_inches='tight',pad_inches=0.3)
             if section.log_write:
