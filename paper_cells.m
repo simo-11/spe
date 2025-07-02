@@ -47,9 +47,13 @@ end
 %% square solid rectangle 100x100
 ss=testRectangle(height=100,width=100,models=ao.models,...
     cubs=ao.cubs,debug=ao.debugLevel,cards=ao.cards);
+%% Iw_errors for solid rectangle 100x100
+iw_fits(height=100,width=100,plot_fitted_surface=1)
 %% solid rectangle 100x10
 r=testRectangle(height=10,width=100,models=ao.models,...
     cubs=ao.cubs,debug=ao.debugLevel,cards=ao.cards);
+%% Iw_errors for solid rectangle 100x10
+iw_fits(height=10,width=100,plot_fitted_surface=1)
 %% sharp cornered U-section 100x50x4
 su=testU(height=100,width=50,t=4,r=0,n_r=0,models=ao.u_models,...
     cubs=ao.u_cubs,debug=ao.debugLevel,cards=ao.u_cards ...

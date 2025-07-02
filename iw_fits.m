@@ -1,19 +1,25 @@
-%% set parameters and plot warping function based on analytical solution
-rect_width=0.1;
-rect_height=0.1;
-if rect_height > rect_width
-    error("rect_width must be => rect_height")
+function iw_fits(ao)
+arguments
+    ao.height=100
+    ao.width=100
+    ao.plot_fitted_surface=1
+    ao.test_for_duplicates=1
+    ao.save_xy_plot=1
+    ao.n_max=4
 end
+rect_width=ao.width/1000;
+rect_height=ao.height/1000;
+test_for_duplicates=ao.test_for_duplicates;
+plot_fitted_surfaces=ao.plot_fitted_surface;
+save_xy_plot=ao.save_xy_plot;
+rect_nMax=ao.n_max;
 rect_a=rect_width/2;
 rect_b=rect_height/2;
-rect_nMax=4;
 rect_x0=rect_a;
 rect_y0=rect_b;
 abs_tol=rect_width^3*rect_height^3/144;
-test_for_duplicates=1;
-plot_fitted_surfaces=0;
-save_xy_plot=1;
 point_set=haltonset(2,skip=30);
+close('all')
 figure(400)
 [X,Y]=meshgrid(0:rect_width/51:rect_width,...
     0:rect_height/51:rect_height);
@@ -27,9 +33,8 @@ titletext=sprintf("Analytical %Gx%G mm, n=%d, Iw=%.4G",...
 title(titletext);
 da=daspect;
 daspect([da(2) da(2) da(3)]);
-%% create fits using increasing number of points
 models=["linearinterp" "cubicinterp" "poly44"...
-     "biharmonicinterp"];
+     "thinplateinterp"];
 % biharmonicinterp is similar as thinplateinterp
 % naturalinterp is quite similar is linearinterp
 line_specs=["--." "-o" "--x" "-^" "-v" ":o" ":x" "-."];
@@ -43,7 +48,6 @@ mp=get(0,'MonitorPositions');
 fig_height=mp(4)/models.size(2)-20;
 fig_width=mp(3)/5;
 for ei=1:edge_size
-    px_values=[];
     for mi=1:models.size(2)
         cmd=sprintf("%s_values=[];",models(mi));
         eval(cmd);
@@ -90,15 +94,15 @@ for ei=1:edge_size
             eval(cmd);
             cmd=sprintf("%s_x_values(%d)=size(c_x,2);",model,x_i);
             eval(cmd);
-            [ff,gof,output] = fit([c_x',c_y'],c_z',model);
+            ff = fit([c_x',c_y'],c_z',model);
             w=@(x,y)ff(x,y).^2;
             Iw=integral2(w,0,rect_width,0,rect_height,...
                 AbsTol=abs_tol,RelTol=0.0001);
-            ev=100*(Iw-Iw_a)/Iw_a;
+            ev=100*(Iw-Iw_a)/Iw_a; %#ok<NASGU> used using eval
             cmd=sprintf("%s_values(%d)=ev;",model,x_i);
             eval(cmd);
             if plot_fitted_surfaces
-                fig=figure(410+mi); %#ok<UNRCH>% if not plotting
+                fig=figure(410+mi);
                 if ri==1
                     fig.Position=[0 (mi-1)*fig_height ...
                         fig_width fig_height];
