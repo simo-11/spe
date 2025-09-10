@@ -23,6 +23,8 @@ G=E/(2*(1+nu))
 def kc(It,Iw):
     return np.sqrt((G*It)/(E*Iw))
 def theta(T,It,Iw,L,x):
+    if Iw==0.:
+        return T/(G*It)*x
     k=kc(It,Iw)
     c0=T/(k*G*It)
     if np.tanh(k*L)==1:
@@ -49,14 +51,14 @@ print(f"J from Bredt's formula {1e6*br_j:.5g} e-6")
 # %% various ways
 if not do_plots:
     plt.close('all')
-for ec_in_h in (4,10,14,15,30,35,40): #
+for ec_in_h in (35,): #4,10,14,15,30,35,40
     geometry = steel_sections.box_girder_section(
         d=d,b_t=b_t,b_b=b_b,t_ft=t_ft,t_fb=t_fb,t_w=t_w)
     ob_geometry=primitive_sections.rectangular_section(d=d,b=b_t)
     ib_geometry=primitive_sections.rectangular_section(d=d-t_ft-t_fb,
                                              b=b_t-2*t_w)
     ms=np.pow(d/ec_in_h,2)
-    ga=[geometry,ob_geometry,ib_geometry]
+    ga=[geometry,]#ob_geometry,ib_geometry
     sa=[]
     for i in range(len(ga)):
         go=ga[i];
@@ -128,13 +130,19 @@ for ec_in_h in (4,10,14,15,30,35,40): #
             section.write_triangles_csv()
             section.write_warping_gltf()    
     if write_table_line:
-        print("|{0}|{1}|{2:.3g}|{3:.3g}|{4:.3g}|{5:.3g}|".format(ec_in_h,
-          sa[0].mesh_nodes.shape[0],
-          1e9*sa[0].get_gamma(),
-          1e6*sa[0].get_j(),
-          1e9*(sa[1].get_gamma()-sa[2].get_gamma()),
-          1e6*(sa[1].get_j()-sa[2].get_j())))
-    if log_parts:
+        if len(sa)>1:
+            print("|{0}|{1}|{2:.3g}|{3:.3g}|{4:.3g}|{5:.3g}|".format(ec_in_h,
+              sa[0].mesh_nodes.shape[0],
+              1e9*sa[0].get_gamma(),
+              1e6*sa[0].get_j(),
+              1e9*(sa[1].get_gamma()-sa[2].get_gamma()),
+              1e6*(sa[1].get_j()-sa[2].get_j())))
+        else:
+            print("|{0}|{1}|{2:.3g}|{3:.3g}|".format(ec_in_h,
+              sa[0].mesh_nodes.shape[0],
+              1e9*sa[0].get_gamma(),
+              1e6*sa[0].get_j()))
+    if log_parts and len(sa)>1:
         print("|{0}|{1}|{2:.3g}|{3:.3g}|{4:.3g}|{5:.3g}|".format(
           sa[1].mesh_nodes.shape[0],
           sa[2].mesh_nodes.shape[0],
@@ -148,5 +156,14 @@ T=1e3
 It=sa[0].get_j()
 Iw=sa[0].get_gamma()
 k=kc(It,Iw)
+print(f"k={k:.3g}")
+theta_v=theta(T,br_j,0,L,L)
+print(f"It={br_j:.4}, theta={theta_v*180/np.pi:.4g}°")
+theta_v=theta(T,It,0,L,L)
+print(f"It={It:.4}, Iw=0, theta={theta_v*180/np.pi:.4g}°")
 theta_v=theta(T,It,Iw,L,L)
-print(f"kL={k*L:.3g}, theta={theta_v:.4g} rad/{theta_v*180/np.pi:.4g}°")
+print(f"It={It:.4}, Iw={Iw:.4g}, theta={theta_v*180/np.pi:.4g}°")
+It=10.17e-6
+Iw=1.388e-9
+theta_v=theta(T,It,Iw,L,L)
+print(f"It={It:.4}, Iw={Iw:.4g}, theta={theta_v*180/np.pi:.4g}°")
