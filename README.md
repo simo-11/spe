@@ -44,7 +44,7 @@ Dependencies can be installed using pip
 
 Typical command needed after update of python is (uv in front if it is used)
 ```
-pip install spyder-kernels==3.0.* pygltflib sectionproperties[numba] plyfile sympy
+pip install spyder-kernels==3.1.* pygltflib sectionproperties[numba] plyfile sympy
 ```
 
 ## Matlab
