@@ -18,9 +18,9 @@ PS C:\> winget install -e --id astral-sh.uv
 
 ## Python
 ```
-C:\> uv python install 3.13.7
-github\spe [main ≡]> uv venv
-Using CPython 3.13.7
+C:\> uv python install 3.13.8
+github\spe [main ≡]> uv venv --clear --python 3.13.8
+Using CPython 3.13.8
 Creating virtual environment at: .venv
 Activate with: .venv\Scripts\activate
 github\spe [main ≡]> .venv\Scripts\activate
