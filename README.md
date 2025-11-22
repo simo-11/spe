@@ -32,6 +32,7 @@ Istalling using winget
 PS C:\> winget install -e --id Spyder.Spyder
 ```
 Tools/Preferences/Python interpreter github/spe/.venv/Scripts/python.exe
+Working directory (right upper corner) github/spe
 
 ## Python packages
 
