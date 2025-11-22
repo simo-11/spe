@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import simo.dev
 import types
+import time
 import sectionproperties.pre.library.steel_sections as steel_sections
 import sectionproperties.pre.library.primitive_sections as primitive_sections
 do_plots=False
@@ -51,7 +52,7 @@ print(f"J from Bredt's formula {1e6*br_j:.5g} e-6")
 # %% various ways
 if not do_plots:
     plt.close('all')
-for ec_in_h in (35,): #4,10,14,15,30,35,40
+for ec_in_h in range(10,40,5): #4,10,14,15,30,35,40
     geometry = steel_sections.box_girder_section(
         d=d,b_t=b_t,b_b=b_b,t_ft=t_ft,t_fb=t_fb,t_w=t_w)
     ob_geometry=primitive_sections.rectangular_section(d=d,b=b_t)
@@ -61,6 +62,7 @@ for ec_in_h in (35,): #4,10,14,15,30,35,40
     ga=[geometry,]#ob_geometry,ib_geometry
     sa=[]
     for i in range(len(ga)):
+        start=time.time()
         go=ga[i];
         go.create_mesh(mesh_sizes=[ms])
         section=simo.dev.DevSection(go)
@@ -86,6 +88,7 @@ for ec_in_h in (35,): #4,10,14,15,30,35,40
         section.set_args(args)
         section.calculate_geometric_properties()
         section.calculate_warping_properties()
+        end=time.time()
         sa.append(section)
         if do_plots: 
             (fig,ax)=section.contour_warping_values(levels=51,title='',
@@ -131,17 +134,23 @@ for ec_in_h in (35,): #4,10,14,15,30,35,40
             section.write_warping_gltf()    
     if write_table_line:
         if len(sa)>1:
-            print("|{0}|{1}|{2:.3g}|{3:.3g}|{4:.3g}|{5:.3g}|".format(ec_in_h,
+            #print("|{0}|{1}|{2:.3g}|{3:.3g}|{4:.3g}|{5:.3g}|".#
+            print("{0}&{1}&{2:.3g}&{3:.3g}&{4:.3g}&{5:.3g} \\\\".
+                  format(ec_in_h,
               sa[0].mesh_nodes.shape[0],
               1e9*sa[0].get_gamma(),
               1e6*sa[0].get_j(),
               1e9*(sa[1].get_gamma()-sa[2].get_gamma()),
               1e6*(sa[1].get_j()-sa[2].get_j())))
         else:
-            print("|{0}|{1}|{2:.3g}|{3:.3g}|".format(ec_in_h,
+            #print("|{0}|{1}|{2:.4g}|{3:.4g}|{4:.4g}|".
+            print("{0} & {1} & {2:.4g} & {3:.4g} & {4:.2g} \\\\".
+                  format(ec_in_h,
               sa[0].mesh_nodes.shape[0],
+              1e6*sa[0].get_j(),
               1e9*sa[0].get_gamma(),
-              1e6*sa[0].get_j()))
+              (end-start)
+              ))
     if log_parts and len(sa)>1:
         print("|{0}|{1}|{2:.3g}|{3:.3g}|{4:.3g}|{5:.3g}|".format(
           sa[1].mesh_nodes.shape[0],
