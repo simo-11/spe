@@ -176,3 +176,14 @@ It=10.17e-6
 Iw=1.388e-9
 theta_v=theta(T,It,Iw,L,L)
 print(f"It={It:.4}, Iw={Iw:.4g}, theta={theta_v*180/np.pi:.4g}°")
+# %% bilinear
+T=1e3
+def beam_theory_to_latex_table(title,It,Iw):
+    theta_v=theta(T,It,Iw,L,L)
+    print(f"Warping torsion {title} & {It*1e6:.2f} & "
+          f"{Iw*1e9:.3f} & {theta_v*180/np.pi:.4g} \\\\"
+          )
+beam_theory_to_latex_table("$120 \\times 60$",
+                           10.724e-6,2.5394e-9)
+beam_theory_to_latex_table("$280 \\times 140$",
+                           10.603e-6,2.4938e-9)
